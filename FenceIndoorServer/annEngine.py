@@ -5,7 +5,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 
 #rete neurale artificiale
-ann = None
+classifier = None
 
 #costruisce la matrice di input ed il vettore di output 
 #in base ai dati presenti sul db utilizzando i flussi ETL
@@ -21,7 +21,7 @@ def makeDataFromDbByETL():
 #costruisce una rete neurale con keras
 def buildAndFitAnn(inputMatrix, outputVector):
     
-    global ann
+    global classifier
     
     #Normalizza la matrice di ingresso
     inputMatrix = StandardScaler().fit_transform(inputMatrix)
@@ -44,9 +44,6 @@ def buildAndFitAnn(inputMatrix, outputVector):
     #addestra la rete neurale
     classifier.fit(inputMatrix, outputVector, batch_size = 10, epochs = 100)
     
-    #assegna il classificatore alla variabile globale
-    ann = classifier;
-    
 
 #crea la matrice di input in base alle scansioni passate in ingresso
 def makeInputMatrixFromScans(wifiScans):
@@ -60,9 +57,9 @@ def makeInputMatrixFromScans(wifiScans):
 #effettua una predizione
 def predictArea(inputMatrix):
     
-    global ann
+    global classifier
     
-    y_pred = ann.predict(inputMatrix)
+    y_pred = classifier.predict(inputMatrix)
     y_pred = (y_pred > 0.5)
     
     #TODO da implementare

@@ -2,12 +2,13 @@
 from pymongo import MongoClient
 from bson import json_util
 from bson.objectid import ObjectId
-import commonEngine
+import json
+import commonEngine as com
 
 #si collega al mongodb
 def getDb():
-    clientDb = MongoClient(commonEngine.getCfg('database', 'url'))
-    return clientDb[commonEngine.getCfg('database', 'name')]
+    clientDb = MongoClient(com.getCfg('database', 'url'))
+    return clientDb[com.getCfg('database', 'name')]
 
 
 #trasforma una stringa in bson
@@ -18,6 +19,10 @@ def str2Bson(str):
 #trasforma il bson in una stringa
 def bson2Str(bsonObj):
     return json_util.dumps(bsonObj)
+
+#trasforma il bson in un json
+def bson2Json(bsonObj):
+    return json.loads(json_util.dumps(bsonObj))
 
 
 #inizializza il database
@@ -48,7 +53,7 @@ def getAreaListFromDb():
     areaList = []
     for areaDoc in cursor:
         #ottiene il dictionary dal documento del database
-        area = commonEngine.str2Json(bson2Str(areaDoc))
+        area = bson2Json(areaDoc)
 
         #modifica il campo id del dictionary
         area["id"] = area["_id"]["$oid"]
@@ -70,7 +75,7 @@ def saveWifiScansToDb(areaId, inputJson):
     areaDoc = db.aree.find_one({"_id" : ObjectId(areaId)})
     
     #trasforma il record ottenuto in json
-    area = commonEngine.str2Json(bson2Str(areaDoc))
+    area = bson2Json(areaDoc)
     
     #ottiene il conteggio delle scansioni dal json dell'area
     areaName = area["name"]

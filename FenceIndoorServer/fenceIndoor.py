@@ -6,9 +6,10 @@
 #pip install keras
 
 from flask import Flask, request
-import commonEngine
-import dbEngine
-import annEngine
+import commonEngine as com
+import dbEngine as db
+import annEngine as ann
+
 
 #inizializza l'interfaccia rest
 app = Flask(__name__)
@@ -23,7 +24,7 @@ def ping():
 #inizializza la struttura del database
 @app.route('/init', methods=['GET'])
 def init():
-    dbEngine.clearAndInitDb()
+    db.clearAndInitDb()
     return "", 200, {'ContentType':'application/json'} 
 	
 
@@ -33,10 +34,10 @@ def getAreaList():
     print("invocato metodo getAreaList");
     
     #ottiene la lista delle aree dal database
-    areaList = dbEngine.getAreaListFromDb()
+    areaList = db.getAreaListFromDb()
 		
     #trasforma la lista di dictionary in stringa e torna l'output
-    return commonEngine.json2Str(areaList), 200, {'ContentType':'application/json'} 
+    return com.json2Str(areaList), 200, {'ContentType':'application/json'} 
 
 	
 #acquisisce i dati
@@ -45,10 +46,10 @@ def sendData(areaId):
     print("invocato metodo sendData con areaId: ", areaId);
     
     #trasforma il bodyrequest in json
-    inputJson = commonEngine.getJsonFromBodyRequest(request)
+    inputJson = com.getJsonFromBodyRequest(request)
     
     #salva le scansioni wifi sul database
-    dbEngine.saveWifiScansToDb(areaId, inputJson)
+    db.saveWifiScansToDb(areaId, inputJson)
 	
     #torna la risposta
     return "", 200, {'ContentType':'application/json'} 
@@ -60,10 +61,10 @@ def training():
     print("invocato metodo training");
 	
     #costruisce i dati
-    X,y = annEngine.makeDataFromDbByETL()
+    X,y = ann.makeDataFromDbByETL()
     
     #crea la ANN
-    annEngine.buildAndFitAnn(X, y)
+    ann.buildAndFitAnn(X, y)
     
     #torna la risposta
     return "", 200, {'ContentType':'application/json'} 
@@ -75,7 +76,7 @@ def predict():
     print("invocato metodo predict");
 
     #trasforma il bodyrequest in json
-    inputJson = commonEngine.getJsonFromBodyRequest(request)
+    inputJson = com.getJsonFromBodyRequest(request)
     
     #effettua un ciclo sulle scansioni passate in ingresso
     for wifiScan in inputJson:
@@ -86,18 +87,18 @@ def predict():
         print("wifi name: ", name, " level: ", level)
         
     #effettua una predict dell'area
-    X = annEngine.makeInputMatrixFromScans(inputJson)
-    area = annEngine.predictArea(X)
+    X = ann.makeInputMatrixFromScans(inputJson)
+    area = ann.predictArea(X)
     
     #trasforma il json di risposta in stringa e torna l'output
-    return commonEngine.json2Str(area), 200, {'ContentType':'application/json'} 
+    return com.json2Str(area), 200, {'ContentType':'application/json'} 
 
 	
 #main
 if __name__ == '__main__':
     #avvia il server in ascolto
     app.run(
-        host=commonEngine.getCfg('server', 'address'), 
-        port=commonEngine.getCfg('server', 'port'), 
+        host=com.getCfg('server', 'address'), 
+        port=com.getCfg('server', 'port'), 
         debug=False
     )
