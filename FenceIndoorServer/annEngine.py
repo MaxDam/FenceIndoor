@@ -53,6 +53,39 @@ def makeInputMatrixFromScans(wifiScans):
     
     #TODO da implementare
     
+    #1) ottiene l'elenco delle wifi acquisite 
+    #db.wifiScans.aggregate([ { $group: {"_id":"$wifiName", count:{$sum:1}} } ])
+    
+    #2) assegna alla variabile <wifiCount> il numero di wifi acquisite
+    
+    #3) crea un dictionary <wifiMap> dove associa ogni <wifiName> con un numero sequenziale
+    
+    #4) crea una matrice <inputMatrix> fatta di <wifiCount> colonne
+    
+    #5) ottiene le aree dal database
+    #db.aree.find()
+    
+    #6) salva nella variabile <areaCount> il numero totale delle aree
+    
+    #7) scorre le aree e per ognuna acquisisce i campi <area> e <lastScanId>
+    
+    #8) per ogni area effettua un sotto-ciclo da 1 a <lastScanId>
+    
+    #9) per ogni iterazione del sotto-ciclo ottiene l'elenco delle scansioni 
+    #db.wifiScans.find({ area:'<area>', scanId: <scanId> })
+    
+    #10) crea un vettore di <newRow> lungo <wifiCount> con valori tutti a zero
+    
+    #11) usa il dictionary <wifiMap> per riempire al posto giusto il vettore <newRow>
+    #con i dati della scansione <wifiLevel>
+    
+    #12) inserisce la nuova riga nella matrice <inputMatrix>
+    
+    #13) finita di comporre la matrice, crea la ANN con:
+    #un numero di neuroni di input uguale a <wifiCount>,
+    #un numero di neuroni di output uguale a <areaCount>,
+    #un numero di neuroni hidden proporzionale all'input ed all'output
+    
     inputMatrix = np.zeros(15,100, dtype=np.int)
     return inputMatrix
     
