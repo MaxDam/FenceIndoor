@@ -20,6 +20,7 @@ def str2Bson(str):
 def bson2Str(bsonObj):
     return json_util.dumps(bsonObj)
 
+
 #trasforma il bson in un json
 def bson2Json(bsonObj):
     return json.loads(json_util.dumps(bsonObj))
