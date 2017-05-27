@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Fence Indoor</string>
+    <string name="app_name_title">FenceIndoor</string>
+    <string name="hello_world">FenceIndoor</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_scelta_area">Area handle</string>
+    <string name="label_scanning">Scanning</string>
+    <string name="label_training">Training</string>
+    <string name="label_predict">Predict</string>
+    <string name="label_settings">Settings</string>
+    <string name="title_activity_scan">Scanning wifi</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- General settings -->
+    <string name="pref_header_general">General</string>
+
+    <string name="pref_title_debug">Debug</string>
+
+    <!-- settings for Data & Sync -->
+    <string name="pref_header_data_sync">Data &amp; sync</string>
+
+    <string name="pref_title_server_path">Server path</string>
+    <string name="pref_default_server_path">http://localhost:8080</string>
+
+    <string name="pref_title_scan_count">Scan count</string>
+    <string-array name="pref_scan_count_titles">
+        <item>1 scansione</item>
+        <item>10 scansioni</item>
+        <item>25 scansioni</item>
+        <item>50 scansioni</item>
+        <item>100 scansioni</item>
+    </string-array>
+    <string-array name="pref_scan_count_values">
+        <item>1</item>
+        <item>10</item>
+        <item>25</item>
+        <item>50</item>
+        <item>100</item>
+    </string-array>
+
+</resources>

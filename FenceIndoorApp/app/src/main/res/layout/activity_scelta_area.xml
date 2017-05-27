@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:ads="http://schemas.android.com/apk/lib/com.google.ads"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+	
+    <RelativeLayout
+        android:id="@+id/content"
+		android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@id/header">
+
+        <ProgressBar
+            android:id="@+id/loadImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="100dp"
+            android:layout_alignParentRight="false"
+            android:layout_alignParentEnd="false"/>
+
+        <ListView
+            android:id="@+id/aziendeListView"
+            android:scrollbars="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </ListView>
+   	</RelativeLayout>
+</RelativeLayout>
