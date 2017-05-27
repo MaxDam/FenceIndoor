@@ -41,10 +41,10 @@ def getAreaListFromDb():
     #ottiene l'oggetto per accedere al db
     db = getDb()
     
-	#ottiene tutte le aree dal database
+    #ottiene tutte le aree dal database
     cursor = db.aree.find()
 	
-	#scorre i dati..
+    #scorre i dati..
     areaList = []
     for areaDoc in cursor:
         #ottiene il dictionary dal documento del database
@@ -91,7 +91,7 @@ def saveWifiScansToDb(areaId, inputJson):
     #incrementa il numero di scansioni
     scanCount = scanCount + 1
 		
-	#effettua l'update dell'area
+    #effettua l'update dell'area
     db.aree.update({"_id" : ObjectId(areaId)}, {"name": areaName, "scanCount": scanCount})
     
     return
