@@ -1,0 +1,9 @@
+
+database:
+    url: mongodb://localhost:27017
+    user: root
+    passwd: toor
+    name: fi
+server:
+    address: 0.0.0.0
+    port: 8090
