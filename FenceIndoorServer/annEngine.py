@@ -5,6 +5,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 #import petl as etl
 
+
 #rete neurale artificiale
 classifier = None
 
