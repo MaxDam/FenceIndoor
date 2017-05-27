@@ -113,7 +113,7 @@ public class MainActivity extends Activity {
             //ottiene l'area predict
             Area areaPredict = new Gson().fromJson(intent.getStringExtra("areaPredict"), Area.class);
 
-            Toast.makeText(MainActivity.this, "Ti trovi nell'area: " + areaPredict.getName(), Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, "Ti trovi nell'area: " + areaPredict.getArea(), Toast.LENGTH_LONG).show();
         }
     };
 

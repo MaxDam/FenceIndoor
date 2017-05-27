@@ -1,29 +1,25 @@
 package com.maxdam.fenceindoor.model;
 
-/**
- * Created by max on 25/05/17.
- */
 public class WifiScan {
 
-    private String name;
-    private Integer level;
+    private String wifiName;
+    private Integer wifiLevel;
     private transient Integer color;
-    private String area;
 
-    public String getName() {
-        return name;
+    public String getWifiName() {
+        return wifiName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setWifiName(String wifiName) {
+        this.wifiName = wifiName;
     }
 
-    public Integer getLevel() {
-        return level;
+    public Integer getWifiLevel() {
+        return wifiLevel;
     }
 
-    public void setLevel(Integer level) {
-        this.level = level;
+    public void setWifiLevel(Integer wifiLevel) {
+        this.wifiLevel = wifiLevel;
     }
 
     public Integer getColor() {
@@ -34,11 +30,4 @@ public class WifiScan {
         this.color = color;
     }
 
-    public String getArea() {
-        return area;
-    }
-
-    public void setAreaName(String area) {
-        this.area = area;
-    }
 }

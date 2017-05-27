@@ -3,8 +3,8 @@ package com.maxdam.fenceindoor.model;
 public class Area {
 
     private String id;
-    private String name;
-    private Integer scanCount;
+    private String area;
+    private Integer lastScanId;
     private transient Integer color;
 
     public String getId() {
@@ -15,20 +15,20 @@ public class Area {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getArea() {
+        return area;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setArea(String area) {
+        this.area = area;
     }
 
-    public Integer getScanCount() {
-        return scanCount;
+    public Integer getLastScanId() {
+        return lastScanId;
     }
 
-    public void setScanCount(Integer scanCount) {
-        this.scanCount = scanCount;
+    public void setLastScanId(Integer lastScanId) {
+        this.lastScanId = lastScanId;
     }
 
     public Integer getColor() {

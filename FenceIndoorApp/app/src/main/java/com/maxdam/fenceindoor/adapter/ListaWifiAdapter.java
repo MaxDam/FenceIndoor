@@ -48,8 +48,8 @@ public class ListaWifiAdapter extends ArrayAdapter<WifiScan> {
          wifi.setColor(RandomUtil.randomDefaultColor());
          
          //set del nome e del livello di segnale
-         viewHolder.detail.setText(wifi.getName());
-         viewHolder.subDetail.setText(wifi.getLevel().toString());
+         viewHolder.detail.setText(wifi.getWifiName());
+         viewHolder.subDetail.setText(wifi.getWifiLevel().toString());
 
          //colora lo sfondo dell'icona
          viewHolder.icon.setBackgroundColor(wifi.getColor());

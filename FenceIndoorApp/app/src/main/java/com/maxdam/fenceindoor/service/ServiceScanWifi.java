@@ -97,8 +97,8 @@ public class ServiceScanWifi extends IntentService {
 				ScanResult scanResult = scanResultList.get(i);
 
 				WifiScan wifiScan = new WifiScan();
-				wifiScan.setName(scanResult.SSID);
-				wifiScan.setLevel(WifiManager.calculateSignalLevel(scanResult.level, 100));
+				wifiScan.setWifiName(scanResult.SSID);
+				wifiScan.setWifiLevel(WifiManager.calculateSignalLevel(scanResult.level, 100));
 
 				wifiScanList.add(wifiScan);
 			}

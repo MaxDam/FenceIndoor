@@ -48,8 +48,8 @@ public class ListaAreeAdapter extends ArrayAdapter<Area> {
          area.setColor(RandomUtil.randomDefaultColor());
          
          //set del nome e dello scan count
-         viewHolder.detail.setText(area.getName());
-         viewHolder.subDetail.setText(area.getScanCount().toString());
+         viewHolder.detail.setText(area.getArea());
+         viewHolder.subDetail.setText(area.getLastScanId().toString());
          
          //onclick sull'item
          convertView.setOnClickListener(new OnClickListener() {
