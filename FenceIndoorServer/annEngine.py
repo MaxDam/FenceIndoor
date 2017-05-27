@@ -3,9 +3,11 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from keras.models import Sequential
 from keras.layers import Dense
+#import petl as etl
 
 #rete neurale artificiale
 classifier = None
+
 
 #costruisce la matrice di input ed il vettore di output 
 #in base ai dati presenti sul db utilizzando i flussi ETL

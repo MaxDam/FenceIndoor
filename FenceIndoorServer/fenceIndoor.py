@@ -46,7 +46,7 @@ def sendData(areaId):
     print("invocato metodo sendData con areaId: ", areaId);
     
     #trasforma il bodyrequest in json
-    inputJson = com.getJsonFromBodyRequest(request)
+    inputJson = com.bodyRequest2Json(request)
     
     #salva le scansioni wifi sul database
     db.saveWifiScansToDb(areaId, inputJson)
@@ -76,7 +76,7 @@ def predict():
     print("invocato metodo predict");
 
     #trasforma il bodyrequest in json
-    inputJson = com.getJsonFromBodyRequest(request)
+    inputJson = com.bodyRequest2Json(request)
     
     #effettua un ciclo sulle scansioni passate in ingresso
     for wifiScan in inputJson:

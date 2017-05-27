@@ -1,36 +1,17 @@
 
 from pymongo import MongoClient
-from bson import json_util
 from bson.objectid import ObjectId
-import json
 import commonEngine as com
 
+
 #si collega al mongodb
-def getDb():
-    clientDb = MongoClient(com.getCfg('database', 'url'))
-    return clientDb[com.getCfg('database', 'name')]
-
-
-#trasforma una stringa in bson
-def str2Bson(str):
-    return json_util.loads(str)
-
-
-#trasforma il bson in una stringa
-def bson2Str(bsonObj):
-    return json_util.dumps(bsonObj)
-
-
-#trasforma il bson in un json
-def bson2Json(bsonObj):
-    return json.loads(json_util.dumps(bsonObj))
+clientDb = MongoClient(com.getCfg('database', 'url'))
+db = clientDb[com.getCfg('database', 'name')]
 
 
 #inizializza il database
 def clearAndInitDb():
-    #ottiene l'oggetto per accedere al db
-    db = getDb()
-    
+
     #cancella le collections
     db.aree.drop()
     db.wifiScans.drop()
@@ -43,9 +24,6 @@ def clearAndInitDb():
 
 #ritorna un json contenente tutte le aree prese dal database
 def getAreaListFromDb():
-
-    #ottiene l'oggetto per accedere al db
-    db = getDb()
     
     #ottiene tutte le aree dal database
     cursor = db.aree.find()
@@ -54,7 +32,7 @@ def getAreaListFromDb():
     areaList = []
     for areaDoc in cursor:
         #ottiene il dictionary dal documento del database
-        area = bson2Json(areaDoc)
+        area = com.bson2Json(areaDoc)
 
         #modifica il campo id del dictionary
         area["id"] = area["_id"]["$oid"]
@@ -69,14 +47,11 @@ def getAreaListFromDb():
 #salva le scansioni wifi nel database
 def saveWifiScansToDb(areaId, inputJson):
     
-    #ottiene l'oggetto per accedere al db
-    db = getDb()
-    
     #ottiene il record dell'area interessata in base alla chiave primaria
     areaDoc = db.aree.find_one({"_id" : ObjectId(areaId)})
     
     #trasforma il record ottenuto in json
-    area = bson2Json(areaDoc)
+    area = com.bson2Json(areaDoc)
     
     #ottiene il conteggio delle scansioni dal json dell'area
     areaName = area["name"]
@@ -99,5 +74,4 @@ def saveWifiScansToDb(areaId, inputJson):
 		
     #effettua l'update dell'area
     db.aree.update({"_id" : ObjectId(areaId)}, {"name": areaName, "scanCount": scanCount})
-    
-    return
+
