@@ -1,4 +1,6 @@
 
+#funzioni comuni
+
 import yaml
 import json
 from bson import json_util

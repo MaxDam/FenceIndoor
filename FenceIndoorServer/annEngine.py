@@ -1,9 +1,12 @@
 
+#funzioni di utilita' ANN e di preparazione dati ETL
+
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from keras.models import Sequential
 from keras.layers import Dense
 #import petl as etl
+import math
 import dbEngine as dao
 
 
@@ -103,8 +106,8 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #un numero di neuroni hidden proporzionale all'input ed all'output
     inputUnits = inputMatrix.shape[1]
     outputUnits = outputMatrix.shape[1]
-    hidden1Units = int((inputUnits + outputUnits) / 2)
-    hidden2Units = int((hidden1Units + outputUnits) /2)
+    hidden1Units = math.ceil((inputUnits + outputUnits) / 2)
+    hidden2Units = math.ceil((hidden1Units + outputUnits) /2)
 
     #Normalizza la matrice di ingresso
     inputMatrix = StandardScaler().fit_transform(inputMatrix)

@@ -1,4 +1,6 @@
 
+#funzioni di utilita' dao con accesso al database mongodb
+
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import commonEngine as com
