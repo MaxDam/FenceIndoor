@@ -78,14 +78,6 @@ def predict():
     #trasforma il bodyrequest in json
     inputJson = com.bodyRequest2Json(request)
     
-    #effettua un ciclo sulle scansioni passate in ingresso
-    for wifiScan in inputJson:
-        
-        #ottiene i dettagli della singola scansione
-        name = wifiScan["name"]
-        level = wifiScan["level"]
-        print("wifi name: ", name, " level: ", level)
-        
     #effettua una predict dell'area
     X = ann.makeInputMatrixFromScans(inputJson)
     area = ann.predictArea(X)
