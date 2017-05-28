@@ -30,6 +30,7 @@ def init():
     try:
         #inizializza il db
         dao.clearAndInitDb()
+        
         return "", 200, {'ContentType':'application/json'} 
 	 
     except Exception as e:
@@ -123,7 +124,7 @@ def predict():
 if __name__ == '__main__':
     #avvia il server in ascolto
     app.run(
-        host=com.getCfg('server', 'address'), 
-        port=com.getCfg('server', 'port'), 
-        debug=False
+        host =com.getCfg('server', 'address'), 
+        port =com.getCfg('server', 'port'), 
+        debug=com.getCfg('server', 'debug')
     )
