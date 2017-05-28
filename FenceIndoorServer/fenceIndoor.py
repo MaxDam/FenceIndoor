@@ -7,7 +7,7 @@
 
 from flask import Flask, request
 import commonEngine as com
-import dbEngine as db
+import dbEngine as dao
 import annEngine as ann
 
 
@@ -24,7 +24,7 @@ def ping():
 #inizializza la struttura del database
 @app.route('/init', methods=['GET'])
 def init():
-    db.clearAndInitDb()
+    dao.clearAndInitDb()
     return "", 200, {'ContentType':'application/json'} 
 	
 
@@ -34,7 +34,7 @@ def getAreaList():
     print("invocato metodo getAreaList");
     
     #ottiene la lista delle aree dal database
-    areaList = db.getAreaListFromDb()
+    areaList = dao.getAreaListFromDb()
 		
     #trasforma la lista di dictionary in stringa e torna l'output
     return com.json2Str(areaList), 200, {'ContentType':'application/json'} 
@@ -49,7 +49,7 @@ def sendData(areaId):
     inputJson = com.bodyRequest2Json(request)
     
     #salva le scansioni wifi sul database
-    db.saveWifiScansToDb(areaId, inputJson)
+    dao.saveWifiScansToDb(areaId, inputJson)
 	
     #torna la risposta
     return "", 200, {'ContentType':'application/json'} 
@@ -61,10 +61,10 @@ def training():
     print("invocato metodo training");
 	
     #costruisce i dati
-    X,y = ann.makeDataFromDbByETL()
+    X, Y = ann.makeDataFromDb()
     
     #crea la ANN
-    ann.buildAndFitAnn(X, y)
+    ann.buildAndFitAnn(X, Y)
     
     #torna la risposta
     return "", 200, {'ContentType':'application/json'} 

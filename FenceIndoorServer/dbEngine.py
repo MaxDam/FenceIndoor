@@ -75,3 +75,68 @@ def saveWifiScansToDb(areaId, inputJson):
     #effettua l'update dell'area
     db.aree.update({"_id" : ObjectId(areaId)}, {"area": areaName, "lastScanId": scanId})
 
+
+#ritorna l'elenco di tutte le wifi uniche acquisite
+def getWifiListFromDb():
+    
+    #ottiene tutte le aree dal database
+    cursor = db.wifiScans.aggregate([ { "$group": {"_id":"$wifiName", "count":{"$sum":1}} } ])
+	
+    #scorre i dati..
+    wifiList = []
+    for wifiDoc in cursor:
+        #ottiene il dictionary dal documento del database
+        wifi = com.bson2Json(wifiDoc)
+
+        #modifica il campo id del dictionary
+        wifi["wifiName"] = wifi["_id"]
+        wifi.pop('_id', None)
+		
+        #appende i dati alla lista finale
+        wifiList.append(wifi)
+    
+    return wifiList
+
+
+#torna le associazioni uniche area-scanId prese dalle scansioni
+def getAreaAndScanIdListFromDb():
+    
+    #ottiene tutte le aree dal database
+    cursor = db.wifiScans.aggregate([ { "$group": {"_id":{ "area":"$area", "scanId":"$scanId"} , "count":{"$sum":1}} } ])
+    
+    #scorre i dati..
+    resultList = []
+    for itemDoc in cursor:
+        #ottiene il dictionary dal documento del database
+        item = com.bson2Json(itemDoc)
+
+        #modifica il campo id del dictionary
+        item["area"]   = item["_id"]["area"]
+        item["scanId"] = item["_id"]["scanId"]
+        item.pop('_id', None)
+		
+        #appende i dati alla lista finale
+        resultList.append(item)
+    
+    return resultList
+
+
+#torna l'elenco di scansioni effettuate per area e scanId
+def getScansFromDb(area, scanId):
+    
+    #ottiene tutte le aree dal database
+    cursor = db.wifiScans.find({ "area":area, "scanId": scanId })
+    
+    #scorre i dati..
+    scanList = []
+    for scanDoc in cursor:
+        #ottiene il dictionary dal documento del database
+        scan = com.bson2Json(scanDoc)
+
+        #modifica il campo id del dictionary
+        scan.pop('_id', None)
+		
+        #appende i dati alla lista finale
+        scanList.append(scan)
+    
+    return scanList

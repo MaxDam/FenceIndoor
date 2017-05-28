@@ -4,6 +4,7 @@ from sklearn.preprocessing import StandardScaler
 from keras.models import Sequential
 from keras.layers import Dense
 #import petl as etl
+import dbEngine as dao
 
 
 #rete neurale artificiale
@@ -11,18 +12,83 @@ classifier = None
 
 
 #costruisce la matrice di input ed il vettore di output 
-#in base ai dati presenti sul db utilizzando i flussi ETL
-def makeDataFromDbByETL():
+#in base ai dati presenti sul db
+def makeDataFromDb():
     
-    #TODO da fare sfruttando gli ETL
+    #step 1 
+    #ottiene l'elenco delle wifi acquisite  nelle scansioni, e le itera per ottenere:
+    # - <wifiCount> il numero di wifi acquisite
+    # - una dictionary <wifiMap> che associa ogni <wifiName> con un numero sequenziale rappresentante la colonna della matrice di input
+    wifiCount = 0
+    wifiMap = {}
+    wifiList = dao.getWifiListFromDb()
+    for wifi in wifiList:
+        wifiCount = wifiCount + 1
+        wifiName = wifi['wifiName']
+        wifiMap[wifiName] = wifiCount
     
-    inputMatrix = np.zeros(15,100, dtype=np.int)
-    outputVector = np.zeros(3, dtype=np.int)
-    return inputMatrix, outputVector
+    #step 2
+    #ottiene le aree dal database, e le itera, per ottenere:
+    # - <scanCount> la sommatoria dei <lastScanId> delle aree
+    # - <areaCount> il numero totale delle aree
+    # - <areaMap> una mappa che associa il nome dell'area ad un indice progressivo
+    areaCount = 0
+    scanCount = 0
+    areaMap = {}
+    areaList = dao.getAreaListFromDb()
+    for area in areaList:
+        areaCount = areaCount + 1
+        scanCount = scanCount + area['lastScanId']
+        areaName = area['area']
+        areaMap[areaName] = areaCount
+    
+    #step 3
+    # - crea una matrice <inputMatrix> fatta di <scanCount> righe e di <wifiCount> colonne, con valori tutti a zero
+    # - crea una matrice <outputMatrix> fatta di <scanCount> righe e di <areaCount> colonne, con valori tutti a zero
+    inputMatrix = np.zeros(wifiCount, scanCount, dtype=np.int)
+    outputMatrix = np.zeros(areaCount, scanCount, dtype=np.int)
+    
+    #step 4
+    #ottiene le coppie aree-scansioni uniche, e le itera
+    #ad ogni iterazione:
+    # - ottiene una rowIndex sequenziale
+    # - ottiene la columnIndex dalla areaMap in base al nome dell'area
+    # - assegna il valore areaId al vettore di uscita outputVector[rowIndex, columnIndex]
+    rowIndex = -1
+    areaScanList = dao.getAreaAndScanIdListFromDb()
+    for areaScan in areaScanList:
+        rowIndex = rowIndex + 1
+        areaName = areaScan["area"]
+        columnIndex = areaMap[areaName]
+        outputMatrix[rowIndex, columnIndex]
+        
+        #step 5
+        #ad ogni iterazione..
+        #ottiene le scansioni per l'area e lo scanId correnti, e le itera
+        #ad ogni iterazione:
+        # - ottiene la columnIndex dalla wifiMap in base al nome della wifi
+        # - assegna il valore wifiLevel alla matrice di ingresso inputMatrix[rowIndex, columnIndex] 
+        scanId   = areaScan["scanId"] 
+        scanList = dao.getScansFromDb(areaName, scanId)
+        for scan in scanList:
+            wifiName = scan["wifiName"]
+            columnIndex = wifiMap[wifiName]
+            wifiLevel = scan["wifiLevel"] 
+            inputMatrix[rowIndex, columnIndex] = wifiLevel
+    
+    return inputMatrix, outputMatrix
     
 
 #costruisce una rete neurale con keras
-def buildAndFitAnn(inputMatrix, outputVector):
+def buildAndFitAnn(inputMatrix, outputMatrix):
+    
+    #TODO 
+    #numero di neuroni di input in base al numero di colonne di inputMatrix
+    #numero di neuroni di output in base al numero di colonne di outputMatrix
+    #un numero di neuroni hidden proporzionale all'input ed all'output
+
+    #TODO ottenere outputVector da outputMatrix.. classificazione OneClass
+    outputVector = np.zeros(1000, dtype=np.int)
     
     global classifier
     
@@ -52,50 +118,6 @@ def buildAndFitAnn(inputMatrix, outputVector):
 def makeInputMatrixFromScans(wifiScans):
     
     #TODO da implementare
-    
-    #1) ottiene l'elenco delle wifi acquisite  nelle scansioni
-    #db.wifiScans.aggregate([ { $group: {"_id":"$wifiName", count:{$sum:1}} } ])
-    
-    #2) assegna alla variabile <wifiCount> il numero di wifi acquisite
-    
-    #3) crea un dictionary <wifiMap> dove associa ogni <wifiName> con un numero sequenziale
-    #rappresentante la colonna della matrice di input
-    
-    #4) ottiene le aree dal database
-    #db.aree.find()
-    
-    #5) itera le aree per ottenere dei totali:
-    #salva nella variabile <sumScans> la sommatoria dei <lastScanId> delle aree
-    #e salva nella variabile <areaCount> il numero totale delle aree
-    
-    #6) crea una matrice <inputMatrix> fatta di <wifiCount> colonne 
-    #e di <sumScans> righe, con valori tutti a zero
-    
-    #7) crea un vettore <outputVector> fatto di <sumScans> righe, con valori tutti a zero
-    
-    #8) scorre le aree e per ognuna acquisisce i campi <area> e <lastScanId>, 
-    #e mantiene un contatore di righe matrice <rowIndex>
-    
-    #9) per ogni area effettua un sotto-ciclo da 1 a <lastScanId>
-    
-    #10) inserisce in <outputVector>[<rowIndex>] = <area>
-    
-    #10) per ogni iterazione del sotto-ciclo incrementa <rowIndex>
-    #e ottiene l'elenco delle scansioni 
-    #db.wifiScans.find({ area:'<area>', scanId: <scanId> })
-    
-    #10) usa il dictionary <wifiMap> ottenere un contatore di colonna <colIndex> 
-    #dalla <wifiName> corrente:
-    #<colIndex> = <wifiMap>[<wifiName>]
-    
-    #11) assegna il livello della wifi corrente alla matrice di input
-    #considerando i contatori di riga e colonna <rowIndex>,<colIndex>:
-    #<inputMatrix>[<rowIndex>,<colIndex>] = <wifiLevel>
-    
-    #12) finita di comporre la matrice, crea la ANN con:
-    #un numero di neuroni di input uguale a <wifiCount>,
-    #un numero di neuroni di output uguale a <areaCount>,
-    #un numero di neuroni hidden proporzionale all'input ed all'output
     
     inputMatrix = np.zeros(15,100, dtype=np.int)
     return inputMatrix
