@@ -19,4 +19,13 @@
         android:positiveButtonText="@null"
         android:title="@string/pref_title_scan_count" />
 
+    <ListPreference
+        android:defaultValue="3"
+        android:entries="@array/pref_min_scan_count_titles"
+        android:entryValues="@array/pref_min_scan_count_values"
+        android:key="min_scan_count"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="@string/pref_title_min_scan_count" />
+
 </PreferenceScreen>

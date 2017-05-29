@@ -67,9 +67,22 @@ public class MainActivity extends Activity {
 		predictBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                //ottiene il min scan count
+                int minScanCount;
+                try {
+                    minScanCount = Integer.parseInt(prefs.getString("min_scan_count", "3"));
+                } catch(Exception e) {
+                    minScanCount = 3;
+                }
+
+                //ottiene lo scan count
+                int maxScanCount = 1;
+
                 //richiama il servizio di scansione one-shot
                 Intent serviceScanWifiIntent = new Intent(MainActivity.this, ServiceScanWifi.class);
-                serviceScanWifiIntent.putExtra("scanCount", 1);
+                serviceScanWifiIntent.putExtra("minScanCount", minScanCount);
+                serviceScanWifiIntent.putExtra("maxScanCount", maxScanCount);
                 startService(serviceScanWifiIntent);
             }
         });

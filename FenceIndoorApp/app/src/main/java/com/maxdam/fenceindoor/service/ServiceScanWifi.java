@@ -38,6 +38,8 @@ public class ServiceScanWifi extends IntentService {
 	private final Handler handler = new Handler();
 
     private int scanCount = 0;
+
+    private int minScanCount = 0;
     private int maxScanCount = 1;
 
 	public ServiceScanWifi() {
@@ -53,7 +55,10 @@ public class ServiceScanWifi extends IntentService {
         activeScan.set(true);
         scanCount = 0;
 
-        maxScanCount = intent.getExtras().getInt("scanCount");
+		//preleva i parametri di ingresso
+        minScanCount = intent.getExtras().getInt("minScanCount", 0);
+        maxScanCount = intent.getExtras().getInt("maxScanCount", 10);
+        maxScanCount += minScanCount;
 
         mainWifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 
@@ -89,32 +94,37 @@ public class ServiceScanWifi extends IntentService {
             //se la scansione non e' attiva, esce
             if (!activeScan.get()) return;
 
-			//ottiene la lista delle wifi scansionate
-			final List<WifiScan> wifiScanList = new ArrayList<WifiScan>();
-			List<ScanResult> scanResultList = mainWifi.getScanResults();
-			for (int i = 0; i < scanResultList.size(); i++) {
+            //ottiene la lista delle wifi scansionate
+            final List<WifiScan> wifiScanList = new ArrayList<WifiScan>();
+            List<ScanResult> scanResultList = mainWifi.getScanResults();
+            for (int i = 0; i < scanResultList.size(); i++) {
 
-				ScanResult scanResult = scanResultList.get(i);
+                ScanResult scanResult = scanResultList.get(i);
 
-				WifiScan wifiScan = new WifiScan();
-				wifiScan.setWifiName(scanResult.SSID);
-				wifiScan.setWifiLevel(WifiManager.calculateSignalLevel(scanResult.level, 100));
+                WifiScan wifiScan = new WifiScan();
+                wifiScan.setWifiName(scanResult.SSID);
+                wifiScan.setWifiLevel(WifiManager.calculateSignalLevel(scanResult.level, 100));
 
-				wifiScanList.add(wifiScan);
-			}
+                wifiScanList.add(wifiScan);
+            }
 
-            //invia il broadcast per notificare l'aggiornamento della lista wifi
-            Intent broadcastIntentUpdate = new Intent();
-            broadcastIntentUpdate.setAction(WIFISCAN_UPDATE);
-            Gson gson = new GsonBuilder().excludeFieldsWithModifiers(Modifier.TRANSIENT).create();
-            broadcastIntentUpdate.putExtra("wifiScanList", gson.toJson(wifiScanList.toArray(new WifiScan[wifiScanList.size()]), WifiScan[].class));
-            sendBroadcast(broadcastIntentUpdate);
+            //le lo scan count è maggione delle scansioni minime, invia la scansione al server
+            if(scanCount >= minScanCount) {
+                //invia il broadcast per notificare l'aggiornamento della lista wifi
+                Intent broadcastIntentUpdate = new Intent();
+                broadcastIntentUpdate.setAction(WIFISCAN_UPDATE);
+                Gson gson = new GsonBuilder().excludeFieldsWithModifiers(Modifier.TRANSIENT).create();
+                broadcastIntentUpdate.putExtra("wifiScanList", gson.toJson(wifiScanList.toArray(new WifiScan[wifiScanList.size()]), WifiScan[].class));
+                sendBroadcast(broadcastIntentUpdate);
+            }
 
             //si autorichiama ricorsivamente
 			doInBackground();
 
-			//se ha raggiunto il numero massimo di scansioni.. si ferma
-			scanCount++;
+            //incrementa le scansioni effettuate
+            scanCount++;
+
+            //se ha raggiunto il numero massimo di scansioni.. si ferma
 			if(scanCount >= maxScanCount) {
 
                 //invia il broadcast per notificare la fine del ciclo di scansione

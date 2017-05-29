@@ -60,8 +60,8 @@ def makeDataFromDb():
     #step 3
     # - crea una matrice <inputMatrix> fatta di <scanCount> righe e di <wifiCount> colonne, con valori tutti a zero
     # - crea una matrice <outputMatrix> fatta di <scanCount> righe e di <areaCount> colonne, con valori tutti a zero
-    inputMatrix = np.zeros(wifiCount, scanCount, dtype=np.int)
-    outputMatrix = np.zeros(areaCount, scanCount, dtype=np.int)
+    inputMatrix = np.zeros((wifiCount, scanCount))
+    outputMatrix = np.zeros((areaCount, scanCount))
     
     #step 4
     #ottiene le coppie aree-scansioni uniche, e le itera;
@@ -135,7 +135,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
 def makeInputMatrixFromScans(wifiScans):
     
     #inizializza a zero la matrice di ingresso    
-    inputMatrix = np.zeros(wifiCount, dtype=np.int)
+    inputMatrix = np.zeros(wifiCount)
     
     #effettua un ciclo sulle scansioni passate in ingresso
     for wifiScan in wifiScans:

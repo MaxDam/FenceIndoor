@@ -27,11 +27,11 @@
 
     <string name="pref_title_scan_count">Scan count</string>
     <string-array name="pref_scan_count_titles">
-        <item>1 scansione</item>
-        <item>10 scansioni</item>
-        <item>25 scansioni</item>
-        <item>50 scansioni</item>
-        <item>100 scansioni</item>
+        <item>1 scan</item>
+        <item>10 scans</item>
+        <item>25 scans</item>
+        <item>50 scans</item>
+        <item>100 scans</item>
     </string-array>
     <string-array name="pref_scan_count_values">
         <item>1</item>
@@ -41,4 +41,17 @@
         <item>100</item>
     </string-array>
 
+    <string name="pref_title_min_scan_count">Min scan count</string>
+    <string-array name="pref_min_scan_count_titles">
+        <item>1 scan</item>
+        <item>2 scan</item>
+        <item>3 scan</item>
+        <item>5 scan</item>
+    </string-array>
+    <string-array name="pref_min_scan_count_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>5</item>
+    </string-array>
 </resources>

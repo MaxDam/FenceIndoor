@@ -114,6 +114,14 @@ public class ScanActivity extends Activity {
         Intent intent = getIntent();
         area = intent.getStringExtra("area");
 
+        //ottiene il min scan count
+        int minScanCount;
+        try {
+            minScanCount = Integer.parseInt(prefs.getString("min_scan_count", "3"));
+        } catch(Exception e) {
+            minScanCount = 3;
+        }
+
         //ottiene il max scan count
         int maxScanCount;
         try {
@@ -124,7 +132,8 @@ public class ScanActivity extends Activity {
 
         //richiama il servizio di scansione
         Intent serviceScanWifiIntent = new Intent(this, ServiceScanWifi.class);
-        serviceScanWifiIntent.putExtra("scanCount", maxScanCount);
+        serviceScanWifiIntent.putExtra("minScanCount", minScanCount);
+        serviceScanWifiIntent.putExtra("maxScanCount", maxScanCount);
         this.startService(serviceScanWifiIntent);
     }
 

@@ -106,6 +106,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             setHasOptionsMenu(true);
 
             bindPreferenceSummaryToValue(findPreference("scan_count"));
+            bindPreferenceSummaryToValue(findPreference("min_scan_count"));
         }
 
         @Override
