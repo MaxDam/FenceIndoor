@@ -9,6 +9,7 @@
 #interfacce RESTful
 
 from flask import Flask, request
+import logging
 import commonEngine as com
 import dbEngine as dao
 import annEngine as ann
@@ -31,10 +32,11 @@ def init():
         #inizializza il db
         dao.clearAndInitDb()
         
-        return "", 200, {'ContentType':'application/json'} 
+        return "init ok", 200, {'ContentType':'text/html'} 
 	 
     except Exception as e:
         
+        logging.exception("Got exception")
         return str(e), 500, {'ContentType':'text/html'} 
 
 
@@ -53,6 +55,7 @@ def getAreaList():
     
     except Exception as e:
         
+        logging.exception("Got exception")
         return str(e), 500, {'ContentType':'text/html'} 
 	
 
@@ -74,6 +77,7 @@ def sendData(areaId):
 
     except Exception as e:
         
+        logging.exception("Got exception")
         return str(e), 500, {'ContentType':'text/html'}  
 	
 
@@ -95,6 +99,7 @@ def training():
 
     except Exception as e:
         
+        logging.exception("Got exception")
         return str(e), 500, {'ContentType':'text/html'} 
     
 
@@ -117,6 +122,7 @@ def predict():
 
     except Exception as e:
         
+        logging.exception("Got exception")
         return str(e), 500, {'ContentType':'text/html'} 
     
 	

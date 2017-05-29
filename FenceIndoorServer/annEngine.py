@@ -136,7 +136,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
 def makeInputMatrixFromScans(wifiScans):
     
     #inizializza a zero la matrice di ingresso    
-    inputMatrix = np.zeros(wifiCount)
+    inputMatrix = np.zeros((1, wifiCount))
     
     #effettua un ciclo sulle scansioni passate in ingresso
     for wifiScan in wifiScans:
@@ -145,12 +145,15 @@ def makeInputMatrixFromScans(wifiScans):
         wifiName = wifiScan["wifiName"]
         wifiLevel = wifiScan["wifiLevel"]
         print("wifi name: ", wifiName, " level: ", wifiLevel)
+
+        #se la wifiName e' tra quelle utilizzate per il training..        
+        if wifiName in wifiMap:
+            
+            #ottiene l'indice della matrice di input corrispondente al wifiName
+            columnIndex = wifiMap[wifiName]
         
-        #ottiene l'indice della matrice di input corrispondente al wifiName
-        columnIndex = wifiMap[wifiName]
-        
-        #popola l'elemento columnIndex dell'inputMatrix con il valore wifiLevel
-        inputMatrix[columnIndex] = wifiLevel
+            #popola l'elemento columnIndex dell'inputMatrix con il valore wifiLevel
+            inputMatrix[0, columnIndex] = wifiLevel
     
     #torna la matrice di input
     return inputMatrix
@@ -169,14 +172,17 @@ def predictArea(inputMatrix):
     print("previsione: ", outputPredictMatrix)
     
     #scorre le aree e sceglie quella con maggiore probabilita'
-    predictArea = {"area": "nessuna corrispondenza e' stata trovata"}
+    predictArea = {}
     maxPredictProbability = 0
     predictIndex = 0
     areaList = dao.getAreaListFromDb()
     for area in areaList:
-        if outputPredictMatrix[predictIndex] > maxPredictProbability:
-            maxPredictProbability = outputPredictMatrix[predictIndex]
+
+        if outputPredictMatrix[0, predictIndex] > maxPredictProbability:
+            maxPredictProbability = outputPredictMatrix[0, predictIndex]
             predictArea = area
+
+        predictIndex = predictIndex + 1
 
     #torna l'area predetta
     return predictArea
