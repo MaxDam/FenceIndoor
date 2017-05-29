@@ -41,10 +41,10 @@ def makeDataFromDb():
     # - associare con <wifiMap> ogni <wifiName> con un numero sequenziale rappresentante la colonna della matrice di input
     wifiList = dao.getWifiListFromDb()
     for wifi in wifiList:
-        wifiCount = wifiCount + 1
         wifiName = wifi['wifiName']
         wifiMap[wifiName] = wifiCount
-    
+        wifiCount = wifiCount + 1
+        
     #step 2
     #ottiene le aree dal database, e le itera per:
     # - assegnare a <scanCount> la sommatoria dei <lastScanId> delle aree
@@ -52,16 +52,16 @@ def makeDataFromDb():
     # - associare con <areaMap> il nome dell'area con un numero sequenziale rappresentante la colonna della matrice di output
     areaList = dao.getAreaListFromDb()
     for area in areaList:
-        areaCount = areaCount + 1
         scanCount = scanCount + area['lastScanId']
         areaName = area['area']
         areaMap[areaName] = areaCount
+        areaCount = areaCount + 1
     
     #step 3
     # - crea una matrice <inputMatrix> fatta di <scanCount> righe e di <wifiCount> colonne, con valori tutti a zero
     # - crea una matrice <outputMatrix> fatta di <scanCount> righe e di <areaCount> colonne, con valori tutti a zero
-    inputMatrix = np.zeros((wifiCount, scanCount))
-    outputMatrix = np.zeros((areaCount, scanCount))
+    inputMatrix = np.zeros((scanCount, wifiCount))
+    outputMatrix = np.zeros((scanCount, areaCount))
     
     #step 4
     #ottiene le coppie aree-scansioni uniche, e le itera;
@@ -70,13 +70,12 @@ def makeDataFromDb():
     # - ottiene la columnIndex dalla areaMap in base al nome dell'area
     # - assegna il valore areaId al vettore di uscita outputVector[rowIndex, columnIndex]
     # - esegue lo step 5
-    rowIndex = -1
+    rowIndex = 0
     areaScanList = dao.getAreaAndScanIdListFromDb()
     for areaScan in areaScanList:
-        rowIndex = rowIndex + 1
         areaName = areaScan["area"]
         columnIndex = areaMap[areaName]
-        outputMatrix[rowIndex, columnIndex]
+        outputMatrix[rowIndex, columnIndex] = 1.0
         
         #step 5
         #ottiene le scansioni per l'area e lo scanId correnti, e le itera;
@@ -90,6 +89,8 @@ def makeDataFromDb():
             columnIndex = wifiMap[wifiName]
             wifiLevel = scan["wifiLevel"] 
             inputMatrix[rowIndex, columnIndex] = wifiLevel
+
+        rowIndex = rowIndex + 1
     
     #torna le matrici di input e output
     return inputMatrix, outputMatrix
@@ -106,8 +107,8 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #un numero di neuroni hidden proporzionale all'input ed all'output
     inputUnits = inputMatrix.shape[1]
     outputUnits = outputMatrix.shape[1]
-    hidden1Units = math.ceil((inputUnits + outputUnits) / 2)
-    hidden2Units = math.ceil((hidden1Units + outputUnits) /2)
+    hidden1Units = math.ceil((inputUnits + outputUnits) / 3 * 2)
+    hidden2Units = math.ceil((hidden1Units + outputUnits) /3)
 
     #Normalizza la matrice di ingresso
     inputMatrix = StandardScaler().fit_transform(inputMatrix)
@@ -164,15 +165,19 @@ def predictArea(inputMatrix):
     inputMatrix = StandardScaler().fit_transform(inputMatrix)
     
     #effettua la previsione
-    y_pred = classifier.predict(inputMatrix)
-    y_pred = (y_pred > 0.5)
+    outputPredictMatrix = classifier.predict(inputMatrix)
+    print("previsione: ", outputPredictMatrix)
     
-    #TODO da implementare
+    #scorre le aree e sceglie quella con maggiore probabilita'
+    predictArea = {"area": "nessuna corrispondenza e' stata trovata"}
+    maxPredictProbability = 0
+    predictIndex = 0
+    areaList = dao.getAreaListFromDb()
+    for area in areaList:
+        if outputPredictMatrix[predictIndex] > maxPredictProbability:
+            maxPredictProbability = outputPredictMatrix[predictIndex]
+            predictArea = area
 
-    #prepara la risposta
-    area = {}
-    area['name'] = "Non lo so ancora.. abbi un poco di pazienza";
-    
     #torna l'area predetta
-    return area
+    return predictArea
 
