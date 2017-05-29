@@ -3,19 +3,19 @@
 From the project directory..
 
 
-Generate apk:
+- Generate apk:
 
-cd FendeIndoorApp
+> cd FendeIndoorApp
 
-./gradlew assemble
+> ./gradlew assemble
 
 made apk to the path:
 ./FendeIndoorApp/app/build/outputs/apk/app-release-unsigned.apk
 
 
 
-Start server:
+- Start server:
 
-cd FenceIndoorServer
-python fenceIndoor.py
+> cd FenceIndoorServer
+> python fenceIndoor.py
 
