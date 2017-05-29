@@ -10,7 +10,8 @@ From the project directory..
 > ./gradlew assemble
 
 made apk to the path:
-./FendeIndoorApp/app/build/outputs/apk/app-release-unsigned.apk
+
+> ./FendeIndoorApp/app/build/outputs/apk/app-release-unsigned.apk
 
 
 
