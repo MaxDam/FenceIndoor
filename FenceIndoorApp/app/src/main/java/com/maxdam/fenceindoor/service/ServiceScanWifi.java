@@ -42,6 +42,8 @@ public class ServiceScanWifi extends IntentService {
     private int minScanCount = 0;
     private int maxScanCount = 1;
 
+	private int wifiLevelScale = 100;
+
 	public ServiceScanWifi() {
 		super("ServiceScanWifi");
     }
@@ -64,6 +66,13 @@ public class ServiceScanWifi extends IntentService {
 
 		if(mainWifi.isWifiEnabled()==false) {
 			mainWifi.setWifiEnabled(true);
+		}
+
+		//ottiene la scala di livello x la sensibilita' di lettura del segnale wifi
+		try {
+			wifiLevelScale = Integer.parseInt(prefs.getString("wifi_level_scale", "100"));
+		} catch(Exception e) {
+			wifiLevelScale = 100;
 		}
 
 		doInBackground();
@@ -103,7 +112,7 @@ public class ServiceScanWifi extends IntentService {
 
                 WifiScan wifiScan = new WifiScan();
                 wifiScan.setWifiName(scanResult.SSID);
-                wifiScan.setWifiLevel(WifiManager.calculateSignalLevel(scanResult.level, 100));
+                wifiScan.setWifiLevel(WifiManager.calculateSignalLevel(scanResult.level, wifiLevelScale));
 
                 wifiScanList.add(wifiScan);
             }

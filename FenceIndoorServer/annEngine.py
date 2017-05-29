@@ -4,7 +4,7 @@
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, Dropout
 #import petl as etl
 import math
 import dbEngine as dao
@@ -122,9 +122,11 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     
     #aggiunge lo strato di input ed il primo strato nascosto
     classifier.add(Dense(units = hidden1Units, kernel_initializer = 'uniform', activation = 'relu', input_dim = inputUnits))
+    classifier.add(Dropout(rate = 0.1))
     
     #aggiunge il secondo strato nascosto
     classifier.add(Dense(units = hidden2Units, kernel_initializer = 'uniform', activation = 'relu'))
+    classifier.add(Dropout(rate = 0.1))
     
     #aggiunge lo strato di uscita
     classifier.add(Dense(units = outputUnits, kernel_initializer = 'uniform', activation = 'sigmoid'))

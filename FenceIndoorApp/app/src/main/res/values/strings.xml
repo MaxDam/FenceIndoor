@@ -54,4 +54,22 @@
         <item>3</item>
         <item>5</item>
     </string-array>
+
+    <string name="pref_title_wifi_level_scale">Wifi leven scale</string>
+    <string-array name="pref_wifi_level_scale_titles">
+        <item>False-True scale</item>
+        <item>Low-Mid-High scale</item>
+        <item>L-LM-M-MH-H scale</item>
+        <item>Ten scale</item>
+        <item>One-Hundred scale</item>
+        <item>One-Thousand scale</item>
+    </string-array>
+    <string-array name="pref_wifi_level_scale_values">
+        <item>2</item>
+        <item>3</item>
+        <item>5</item>
+        <item>10</item>
+        <item>100</item>
+        <item>1000</item>
+    </string-array>
 </resources>

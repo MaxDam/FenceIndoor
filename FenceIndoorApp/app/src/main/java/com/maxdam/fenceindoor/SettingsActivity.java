@@ -105,8 +105,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             addPreferencesFromResource(R.xml.pref_data_sync);
             setHasOptionsMenu(true);
 
+
+            bindPreferenceSummaryToValue(findPreference("server_path"));
             bindPreferenceSummaryToValue(findPreference("scan_count"));
             bindPreferenceSummaryToValue(findPreference("min_scan_count"));
+            bindPreferenceSummaryToValue(findPreference("wifi_level_scale"));
         }
 
         @Override

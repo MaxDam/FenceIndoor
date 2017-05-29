@@ -28,4 +28,13 @@
         android:positiveButtonText="@null"
         android:title="@string/pref_title_min_scan_count" />
 
+    <ListPreference
+        android:defaultValue="100"
+        android:entries="@array/pref_wifi_level_scale_titles"
+        android:entryValues="@array/pref_wifi_level_scale_values"
+        android:key="wifi_level_scale"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="@string/pref_title_wifi_level_scale" />
+
 </PreferenceScreen>
