@@ -13,6 +13,9 @@ import dbEngine as dao
 #classificatore rete neurale artificiale
 classifier = None
 
+#standard scale
+scaler = None
+
 #numero totale delle reti wifi
 wifiCount = 0 
 
@@ -99,7 +102,7 @@ def makeDataFromDb():
 #costruisce una rete neurale con keras
 def buildAndFitAnn(inputMatrix, outputMatrix):
     
-    global classifier
+    global classifier, scaler
     
     #calcola: 
     #numero di neuroni di input in base al numero di colonne di inputMatrix
@@ -111,7 +114,8 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     hidden2Units = math.ceil((hidden1Units + outputUnits) /3)
 
     #Normalizza la matrice di ingresso
-    inputMatrix = StandardScaler().fit_transform(inputMatrix)
+    scaler = StandardScaler()
+    inputMatrix = scaler.fit_transform(inputMatrix)
     
     #Inizializza la rete neurale
     classifier = Sequential()
@@ -165,7 +169,7 @@ def predictArea(inputMatrix):
     global classifier
     
     #Normalizza la matrice di ingresso
-    inputMatrix = StandardScaler().fit_transform(inputMatrix)
+    inputMatrix = scaler.transform(inputMatrix)
     
     #effettua la previsione
     outputPredictMatrix = classifier.predict(inputMatrix)
