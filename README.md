@@ -36,7 +36,7 @@ Sceenshots
 </td></tr>
 </table>
 <br><br>
-#Installation:
+<h2>Installation:<h2>
 
 From the project directory..
 
