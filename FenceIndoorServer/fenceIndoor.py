@@ -81,7 +81,7 @@ def addArea():
 	
 
 #rimuove un'area dal db
-@app.route("/deleteArea/<areaId>", methods=['POST'])
+@app.route("/deleteArea/<areaId>", methods=['GET'])
 def deleteArea(areaId):
 
     print("invocato metodo deleteArea");

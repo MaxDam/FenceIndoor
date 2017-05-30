@@ -51,6 +51,8 @@
         </activity>
 
         <service android:name=".service.ServiceAree" />
+        <service android:name=".service.ServiceAddArea" />
+        <service android:name=".service.ServiceDeleteArea" />
         <service android:name=".service.ServiceSendData" />
         <service android:name=".service.ServiceTraining" />
         <service android:name=".service.ServicePredict" />

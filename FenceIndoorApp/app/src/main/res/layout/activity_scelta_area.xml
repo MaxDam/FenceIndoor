@@ -27,5 +27,19 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
         </ListView>
+
+        <Button
+            android:id="@+id/newAreaBtn"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/round_button"
+            android:textSize="35dp"
+            android:text="+"
+            android:textColor="#fff"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginRight="20dp"
+            android:layout_marginBottom="20dp"/>
    	</RelativeLayout>
 </RelativeLayout>
