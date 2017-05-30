@@ -15,20 +15,20 @@ db = clientDb[com.getCfg('database', 'name')]
 def clearAndInitDb():
 
     #cancella le collections
-    db.aree.drop()
+    db.areas.drop()
     db.wifiScans.drop()
     
     #crea le aree
-    db.aree.insert_one({"area": "area 1", "lastScanId": 0})
-    db.aree.insert_one({"area": "area 2", "lastScanId": 0})
-    db.aree.insert_one({"area": "area 3", "lastScanId": 0})
+    db.areas.insert_one({"area": "area 1", "lastScanId": 0})
+    db.areas.insert_one({"area": "area 2", "lastScanId": 0})
+    db.areas.insert_one({"area": "area 3", "lastScanId": 0})
 
 
 #ritorna un json contenente tutte le aree prese dal database
 def getAreaListFromDb():
     
     #ottiene tutte le aree dal database
-    cursor = db.aree.find()
+    cursor = db.areas.find()
 	
     #scorre i dati..
     areaList = []
@@ -46,11 +46,28 @@ def getAreaListFromDb():
     return areaList
 
 
+#aggiunge un'area nel database
+def addAreaToDb(area):
+    
+    #ottiene il nome dell'area
+    areaName = area['area']
+    
+    #inserisce l'area nel db
+    db.areas.insert_one({"area": areaName, "lastScanId": 0})
+
+
+#cancella un'area dal database
+def deleteAreaToDb(areaId):
+    
+    #rimuove l'area dal db
+    db.areas.delete_many({"_id": ObjectId(areaId)})
+
+
 #salva le scansioni wifi nel database
 def saveWifiScansToDb(areaId, inputJson):
     
     #ottiene il record dell'area interessata in base alla chiave primaria
-    areaDoc = db.aree.find_one({"_id" : ObjectId(areaId)})
+    areaDoc = db.areas.find_one({"_id" : ObjectId(areaId)})
     
     #trasforma il record ottenuto in json
     area = com.bson2Json(areaDoc)
@@ -75,7 +92,7 @@ def saveWifiScansToDb(areaId, inputJson):
         db.wifiScans.insert_one({"scanId": scanId, "area": areaName, "wifiName": wifiName, "wifiLevel": wifiLevel})
         
     #effettua l'update dell'area
-    db.aree.update({"_id" : ObjectId(areaId)}, {"area": areaName, "lastScanId": scanId})
+    db.areas.update({"_id" : ObjectId(areaId)}, {"area": areaName, "lastScanId": scanId})
 
 
 #ritorna l'elenco di tutte le wifi uniche acquisite

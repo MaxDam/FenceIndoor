@@ -57,7 +57,46 @@ def getAreaList():
         
         logging.exception("Got exception")
         return str(e), 500, {'ContentType':'text/html'} 
+
+
+#aggiunge un'area nel db
+@app.route("/addArea", methods=['POST'])
+def addArea():
+
+    print("invocato metodo addArea");
+    
+    try:
+        #trasforma il bodyrequest in json
+        area = com.bodyRequest2Json(request)
+    		
+        dao.addAreaToDb(area)
+        
+        #torna la risposta
+        return "", 200, {'ContentType':'application/json'} 
+    
+    except Exception as e:
+        
+        logging.exception("Got exception")
+        return str(e), 500, {'ContentType':'text/html'} 
 	
+
+#rimuove un'area dal db
+@app.route("/deleteArea/<areaId>", methods=['POST'])
+def deleteArea(areaId):
+
+    print("invocato metodo deleteArea");
+    
+    try:
+        dao.deleteAreaToDb(areaId)
+        
+        #torna la risposta
+        return "", 200, {'ContentType':'application/json'} 
+    
+    except Exception as e:
+        
+        logging.exception("Got exception")
+        return str(e), 500, {'ContentType':'text/html'} 
+    
 
 #acquisisce i dati
 @app.route('/sendData/<areaId>', methods=['POST'])
