@@ -1,5 +1,26 @@
 # FenceIndoor
-<img src="Screenshots/ann.jpg" width=220>
+
+
+<table border="0" width="100%">
+<tr><td>
+<a href="Screenshots/step1.png"><img src="Screenshots/step1.png" width=120></a>
+</td><td>
+Step 1:
+</td></tr>
+<tr><td>
+<a href="Screenshots/step2.png"><img src="Screenshots/step2.png" width=120></a>
+</td><td>
+Step 2:
+</td></tr>
+<tr><td>
+<a href="Screenshots/step3.png"><img src="Screenshots/step3.png" width=120></a>
+</td><td>
+Step 3:
+</td></tr>
+</table>
+
+
+Sceenshots
 <table border="0" width="100%">
 <tr><td>
 <a href="Screenshots/home.png"><img src="Screenshots/home.png" width=120></a>

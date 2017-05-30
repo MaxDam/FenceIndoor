@@ -113,20 +113,32 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     hidden1Units = math.ceil((inputUnits + outputUnits) / 3 * 2)
     hidden2Units = math.ceil((hidden1Units + outputUnits) /3)
 
+    #log
+    print("matrice di input:")
+    print(inputMatrix)
+    
     #Normalizza la matrice di ingresso
     scaler = StandardScaler()
     inputMatrix = scaler.fit_transform(inputMatrix)
+    
+    #log
+    print("matrice di input normalizzata:")
+    print(inputMatrix)
+    
+    #log
+    print("matrice di output:")
+    print(outputMatrix)
     
     #Inizializza la rete neurale
     classifier = Sequential()
     
     #aggiunge lo strato di input ed il primo strato nascosto
     classifier.add(Dense(units = hidden1Units, kernel_initializer = 'uniform', activation = 'relu', input_dim = inputUnits))
-    classifier.add(Dropout(rate = 0.2))
+    #classifier.add(Dropout(rate = 0.1))
     
     #aggiunge il secondo strato nascosto
     classifier.add(Dense(units = hidden2Units, kernel_initializer = 'uniform', activation = 'relu'))
-    classifier.add(Dropout(rate = 0.2))
+    #classifier.add(Dropout(rate = 0.1))
     
     #aggiunge lo strato di uscita
     classifier.add(Dense(units = outputUnits, kernel_initializer = 'uniform', activation = 'sigmoid'))
@@ -170,12 +182,23 @@ def predictArea(inputMatrix):
     
     global classifier
     
+    #log
+    print("matrice di input:")
+    print(inputMatrix)
+    
     #Normalizza la matrice di ingresso
     inputMatrix = scaler.transform(inputMatrix)
     
+    #log
+    print("matrice di input normalizzata:")
+    print(inputMatrix)
+    
     #effettua la previsione
     outputPredictMatrix = classifier.predict(inputMatrix)
-    print("previsione: ", outputPredictMatrix)
+    
+    #log
+    print("previsione:")
+    print(outputPredictMatrix * 100)
     
     #scorre le aree e sceglie quella con maggiore probabilita'
     predictArea = {}
@@ -190,6 +213,6 @@ def predictArea(inputMatrix):
 
         predictIndex = predictIndex + 1
 
-    #torna l'area predetta
+    #torna l'area con maggiore probabilita'
     return predictArea
 
