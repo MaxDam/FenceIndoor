@@ -57,9 +57,14 @@ def addAreaToDb(area):
 
 
 #cancella un'area dal database
-def deleteAreaToDb(areaId):
+def deleteAreaToDb(area):
+    
+    #rimuove dal db le scansioni per l'area da cancellare
+    areaName = area['area']
+    db.wifiScans.delete_many({"area": areaName})
     
     #rimuove l'area dal db
+    areaId = area['id']
     db.areas.delete_many({"_id": ObjectId(areaId)})
 
 

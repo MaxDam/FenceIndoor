@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -25,9 +26,12 @@ import com.maxdam.fenceindoor.service.ServiceTraining;
 public class MainActivity extends Activity {
 
 	private Button scanningBtn, trainingBtn, predictBtn, settingsBtn;
-	private TextView area;
+	private TextView predictArea;
 	private SessionData sessionData;
     private SharedPreferences prefs;
+    private boolean predictMode = false;
+    private int minScanCount = 0;
+    private int maxScanCount = 1;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -45,51 +49,79 @@ public class MainActivity extends Activity {
         predictBtn = (Button)findViewById(R.id.predict);
         settingsBtn = (Button)findViewById(R.id.settings);
 
-		area = (TextView)findViewById(R.id.area);
+        predictArea = (TextView)findViewById(R.id.predictArea);
 
+        //ottiene il min scan count ed il max scan count
+        try {
+            minScanCount = Integer.parseInt(prefs.getString("min_scan_count", "3"));
+        } catch(Exception e) {
+            minScanCount = 3;
+        }
+        maxScanCount = 1;
+
+        //configura il bottone di scanning wifi
         scanningBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-            Intent intent = new Intent(MainActivity.this, SceltaAreaActivity.class);
-            startActivity(intent);
+
+                //disabilita il predict mode
+                disablePredictMode();
+
+                //chiama l'activity di scelta area
+                Intent intent = new Intent(MainActivity.this, SceltaAreaActivity.class);
+                startActivity(intent);
             }
         });
 
+        //configura il bottone di training
         trainingBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                //disabilita il predict mode
+                disablePredictMode();
+
                 //avvia il training in base ai dati gia' trasmessi
                 Intent serviceTrainingIntent = new Intent(MainActivity.this, ServiceTraining.class);
                 MainActivity.this.startService(serviceTrainingIntent);
             }
         });
 
+        //configura il bottone di predict
 		predictBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                //ottiene il min scan count
-                int minScanCount;
-                try {
-                    minScanCount = Integer.parseInt(prefs.getString("min_scan_count", "3"));
-                } catch(Exception e) {
-                    minScanCount = 3;
+                //se predict mode e' attivo lo disabilita, altrimenti lo abilita
+                if(predictMode) {
+                    //disabilita il predict mode
+                    disablePredictMode();
+                } else {
+                    enablePredictMode();
                 }
 
-                //ottiene lo scan count
-                int maxScanCount = 1;
-
-                //richiama il servizio di scansione one-shot
-                Intent serviceScanWifiIntent = new Intent(MainActivity.this, ServiceScanWifi.class);
-                serviceScanWifiIntent.putExtra("minScanCount", minScanCount);
-                serviceScanWifiIntent.putExtra("maxScanCount", maxScanCount);
-                startService(serviceScanWifiIntent);
+                //se siamo in predict mode..
+                if(predictMode) {
+                    //richiama il servizio di scansione one-shot
+                    Intent serviceScanWifiIntent = new Intent(MainActivity.this, ServiceScanWifi.class);
+                    serviceScanWifiIntent.putExtra("minScanCount", minScanCount);
+                    serviceScanWifiIntent.putExtra("maxScanCount", maxScanCount);
+                    startService(serviceScanWifiIntent);
+                } else {
+                    predictArea.setText("");
+                }
             }
         });
 
+        //configura il bottone di setting
         settingsBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                //disabilita il predict mode
+                disablePredictMode();
+
+                //chiama l'activity di setting
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivity(intent);
             }
@@ -109,6 +141,14 @@ public class MainActivity extends Activity {
         IntentFilter filterWifiScanUpdate = new IntentFilter();
         filterWifiScanUpdate.addAction(ServiceScanWifi.WIFISCAN_UPDATE);
         registerReceiver(receiverWifiScanUpdate, filterWifiScanUpdate);
+
+        //receiver di wifiscan end
+        IntentFilter filterWifiScanEnd = new IntentFilter();
+        filterWifiScanEnd.addAction(ServiceScanWifi.WIFISCAN_END);
+        registerReceiver(receiverWifiScanEnd, filterWifiScanEnd);
+
+        //disabilita il predict mode
+        disablePredictMode();
     }
 
     //evento di update training
@@ -126,14 +166,20 @@ public class MainActivity extends Activity {
             //ottiene l'area predict
             Area areaPredict = new Gson().fromJson(intent.getStringExtra("areaPredict"), Area.class);
 
-            Toast.makeText(MainActivity.this, "Ti trovi nell'area: " + areaPredict.getArea(), Toast.LENGTH_LONG).show();
+            //Toast.makeText(MainActivity.this, "Ti trovi in: " + areaPredict.getArea(), Toast.LENGTH_LONG).show();
+            if(predictMode) {
+                predictArea.setText("Ti trovi in: " + areaPredict.getArea());
+            } else {
+                predictArea.setText("");
+            }
         }
     };
 
-    //evento di fine scansione
+    //evento di scansione
     private BroadcastReceiver receiverWifiScanUpdate = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+
             //chiama una predict sul server inviandogli la scansione appena fatta
             String wifiScanListJson = intent.getStringExtra("wifiScanList");
             Intent servicePredictIntent = new Intent(MainActivity.this, ServicePredict.class);
@@ -142,6 +188,37 @@ public class MainActivity extends Activity {
         }
     };
 
+    //evento di fine scansione
+    private BroadcastReceiver receiverWifiScanEnd = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            //se siamo in predict mode..
+            if(predictMode) {
+                //richiama il servizio di scansione one-shot
+                Intent serviceScanWifiIntent = new Intent(MainActivity.this, ServiceScanWifi.class);
+                serviceScanWifiIntent.putExtra("minScanCount", minScanCount);
+                serviceScanWifiIntent.putExtra("maxScanCount", maxScanCount);
+                startService(serviceScanWifiIntent);
+            } else {
+                predictArea.setText("");
+            }
+        }
+    };
+
+    //disabilita il predict mode
+    private void disablePredictMode() {
+        predictMode = false;
+        predictArea.setText("");
+        predictBtn.setBackgroundColor(Color.parseColor("#DA542C"));
+    }
+
+    //abilita il predict mode
+    private void enablePredictMode() {
+        predictMode = true;
+        predictArea.setText("...");
+        predictBtn.setBackgroundColor(Color.parseColor("#FF845C"));
+    }
 
     @Override
     protected void onResume() {
@@ -161,6 +238,14 @@ public class MainActivity extends Activity {
         IntentFilter filterWifiScanUpdate = new IntentFilter();
         filterWifiScanUpdate.addAction(ServiceScanWifi.WIFISCAN_UPDATE);
         registerReceiver(receiverWifiScanUpdate, filterWifiScanUpdate);
+
+        //receiver di wifiscan end
+        IntentFilter filterWifiScanEnd = new IntentFilter();
+        filterWifiScanEnd.addAction(ServiceScanWifi.WIFISCAN_END);
+        registerReceiver(receiverWifiScanEnd, filterWifiScanEnd);
+
+        //disabilita il predict mode
+        disablePredictMode();
     }
 
     @Override
@@ -169,6 +254,10 @@ public class MainActivity extends Activity {
         unregisterReceiver(receiverTraining);
         unregisterReceiver(receiverPredict);
         unregisterReceiver(receiverWifiScanUpdate);
+        unregisterReceiver(receiverWifiScanEnd);
+
+        //disabilita il predict mode
+        disablePredictMode();
 
         super.onPause();
     }
@@ -183,6 +272,9 @@ public class MainActivity extends Activity {
             editor.putString("server_path", CommonStuff.DEBUG_SERVER_PATH);
             editor.commit();
         }
+
+        //disabilita il predict mode
+        disablePredictMode();
 	}
 
     @Override
@@ -190,5 +282,8 @@ public class MainActivity extends Activity {
         super.onBackPressed();
         startActivity(new Intent(this, MainActivity.class));
         finish();
+
+        //disabilita il predict mode
+        disablePredictMode();
     }
 }

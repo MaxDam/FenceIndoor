@@ -102,7 +102,7 @@ public class ListaAreeAdapter extends ArrayAdapter<Area> {
 
                     //comunica con il server per la cancellazione dell'area
                     Intent serviceDeleteAreaIntent = new Intent(ctx, ServiceDeleteArea.class);
-                    serviceDeleteAreaIntent.putExtra("area", area.getId());
+                    serviceDeleteAreaIntent.putExtra("area", new Gson().toJson(area, Area.class));
                     ctx.startService(serviceDeleteAreaIntent);
                 }
             })

@@ -69,6 +69,7 @@ def addArea():
         #trasforma il bodyrequest in json
         area = com.bodyRequest2Json(request)
     		
+        #aggiunge l'area nel db
         dao.addAreaToDb(area)
         
         #torna la risposta
@@ -81,13 +82,17 @@ def addArea():
 	
 
 #rimuove un'area dal db
-@app.route("/deleteArea/<areaId>", methods=['GET'])
-def deleteArea(areaId):
+@app.route("/deleteArea", methods=['POST'])
+def deleteArea():
 
     print("invocato metodo deleteArea");
     
     try:
-        dao.deleteAreaToDb(areaId)
+        #trasforma il bodyrequest in json
+        area = com.bodyRequest2Json(request)
+        
+        #cancella l'area dal db
+        dao.deleteAreaToDb(area)
         
         #torna la risposta
         return "", 200, {'ContentType':'application/json'} 

@@ -6,8 +6,10 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.google.gson.Gson;
 import com.maxdam.fenceindoor.common.CommonStuff;
 import com.maxdam.fenceindoor.common.SessionData;
+import com.maxdam.fenceindoor.model.Area;
 import com.maxdam.fenceindoor.restclient.JsonRestClient;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,8 +33,8 @@ public class ServiceDeleteArea extends IntentService {
 		//ottiene le preferenze
 		prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-		//preleva l'id area da cancellare
-		String area = intent.getExtras().getString("area");
+		//preleva l'area da cancellare
+		Area area = new Gson().fromJson(intent.getExtras().getString("area"), Area.class);
 
 		//se e' gia attivo un tracing.. esce
 		if (inProgress.get()) return;
@@ -53,10 +55,10 @@ public class ServiceDeleteArea extends IntentService {
 				JsonRestClient jsonClient = JsonRestClient
 						.newInstance(prefs.getString("server_path", CommonStuff.DEFAULTSERVER_PATH))
 	            		.addPath(method)
-						.addParam(area);
+						.setRequestBody(area);
 
 				Log.d(TAG, "request: "+jsonClient);
-				String out = jsonClient.get().getOutputString();
+				String out = jsonClient.post().getOutputString();
 				Log.d(TAG, "response: "+out);
 
                 //aggiorla la lista aree chiamando il servizio
