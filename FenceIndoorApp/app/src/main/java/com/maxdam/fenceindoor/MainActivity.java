@@ -31,7 +31,6 @@ public class MainActivity extends Activity {
     private SharedPreferences prefs;
     private boolean predictMode = false;
     private int minScanCount = 0;
-    private int maxScanCount = 1;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -51,13 +50,12 @@ public class MainActivity extends Activity {
 
         predictArea = (TextView)findViewById(R.id.predictArea);
 
-        //ottiene il min scan count ed il max scan count
+        //ottiene il min scan count
         try {
             minScanCount = Integer.parseInt(prefs.getString("min_scan_count", "3"));
         } catch(Exception e) {
             minScanCount = 3;
         }
-        maxScanCount = 1;
 
         //configura il bottone di scanning wifi
         scanningBtn.setOnClickListener(new OnClickListener() {
@@ -105,7 +103,7 @@ public class MainActivity extends Activity {
                     //richiama il servizio di scansione one-shot
                     Intent serviceScanWifiIntent = new Intent(MainActivity.this, ServiceScanWifi.class);
                     serviceScanWifiIntent.putExtra("minScanCount", minScanCount);
-                    serviceScanWifiIntent.putExtra("maxScanCount", maxScanCount);
+                    serviceScanWifiIntent.putExtra("maxScanCount", 1);
                     startService(serviceScanWifiIntent);
                 } else {
                     predictArea.setText("");
@@ -197,8 +195,9 @@ public class MainActivity extends Activity {
             if(predictMode) {
                 //richiama il servizio di scansione one-shot
                 Intent serviceScanWifiIntent = new Intent(MainActivity.this, ServiceScanWifi.class);
-                serviceScanWifiIntent.putExtra("minScanCount", minScanCount);
-                serviceScanWifiIntent.putExtra("maxScanCount", maxScanCount);
+                //serviceScanWifiIntent.putExtra("minScanCount", minScanCount);
+                serviceScanWifiIntent.putExtra("minScanCount", 0);
+                serviceScanWifiIntent.putExtra("maxScanCount", 1);
                 startService(serviceScanWifiIntent);
             } else {
                 predictArea.setText("");
