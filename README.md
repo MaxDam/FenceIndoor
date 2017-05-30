@@ -3,19 +3,22 @@
 
 <table border="0" width="100%">
 <tr><td>
-<a href="Screenshots/step1.png"><img src="Screenshots/step1.png" width=120></a>
+<a href="Screenshots/step1.png"><img src="Screenshots/step1.png" width=300></a>
 </td><td>
-Step 1:
+Step 1:<br>
+...
 </td></tr>
 <tr><td>
-<a href="Screenshots/step2.png"><img src="Screenshots/step2.png" width=120></a>
+<a href="Screenshots/step2.png"><img src="Screenshots/step2.png" width=300></a>
 </td><td>
-Step 2:
+Step 2:<br>
+....
 </td></tr>
 <tr><td>
-<a href="Screenshots/step3.png"><img src="Screenshots/step3.png" width=120></a>
+<a href="Screenshots/step3.png"><img src="Screenshots/step3.png" width=300></a>
 </td><td>
-Step 3:
+Step 3:<br>
+....
 </td></tr>
 </table>
 
