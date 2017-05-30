@@ -4,19 +4,19 @@
 <table border="0" width="100%">
 <tr><td>
 <a href="Screenshots/step1.png"><img src="Screenshots/step1.png" width=400></a>
-</td><td valig=top>
+</td><td valign=top>
 Step 1:<br>
 Select the area you are in and capture all WiFi signals around device
 </td></tr>
 <tr><td>
 <a href="Screenshots/step2.png"><img src="Screenshots/step2.png" width=400></a>
-</td><td valig=top>
+</td><td valign=top>
 Step 2:<br>
 Train the artificial neural network with the collected data
 </td></tr>
 <tr><td>
 <a href="Screenshots/step3.png"><img src="Screenshots/step3.png" width=400></a>
-</td><td valig=top>
+</td><td valign=top>
 Step 3:<br>
 As you move the neural network will make a prediction of the area you are in, 
 depending on the wifi signals caught around the device
