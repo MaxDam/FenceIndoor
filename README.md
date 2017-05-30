@@ -36,9 +36,12 @@ Sceenshots
 </td></tr>
 </table>
 <br><br>
-<h2>Installation:<h2>
+Installation:
+
 
 From the project directory..
+
+
 
 - Generate apk:
 
@@ -49,6 +52,8 @@ From the project directory..
 made apk to the path:
 
 > ./FendeIndoorApp/app/build/outputs/apk/app-release-unsigned.apk
+
+
 
 - Start server:
 
