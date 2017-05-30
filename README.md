@@ -37,10 +37,9 @@ Sceenshots
 </table>
 <br><br>
 Installation:
-
+<br>
 From the project directory..
-
-
+<br>
 - Generate apk:
 
 > cd FendeIndoorApp
@@ -50,8 +49,7 @@ From the project directory..
 made apk to the path:
 
 > ./FendeIndoorApp/app/build/outputs/apk/app-release-unsigned.apk
-
-
+<br>
 - Start server:
 
 > cd FenceIndoorServer
