@@ -55,3 +55,6 @@ made apk to the path:
 > cd FenceIndoorServer
 > python fenceIndoor.py
 
+<br>
+<img src="Screenshots/technologies.png">
+
