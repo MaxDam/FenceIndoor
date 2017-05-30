@@ -1,7 +1,7 @@
 # FenceIndoor
  
  
-![Home](Screenshots/home.png)
+![Home](Screenshots/home.png | width=100)
  
 
 From the project directory..
