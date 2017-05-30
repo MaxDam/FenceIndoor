@@ -2,7 +2,17 @@
  
  
 ![Home](Screenshots/home.png){ width=50% }
- 
+<table border="0" width="100%">
+<tr><td>
+<a href="Screenshots/home.png"><img src="Screenshots/home.png" width=50></a>
+</td><td>
+<a href="Screenshots/home.png"><img src="Screenshots/home.png" width=50></a>
+</td><td>
+<a href="Screenshots/home.png"><img src="Screenshots/home.png" width=50></a>
+</td><td>
+<a href="Screenshots/home.png"><img src="Screenshots/home.png" width=50></a>
+</td></tr>
+</table>
 
 From the project directory..
 
