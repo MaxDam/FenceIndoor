@@ -26,13 +26,13 @@ depending on the wifi signals caught around the device
 Sceenshots
 <table border="0" width="100%">
 <tr><td>
-<a href="Screenshots/home.png"><img src="Screenshots/home.png" width=120></a>
+<a href="Screenshots/home.png"><img src="Screenshots/home.png" width=200></a>
 </td><td>
-<a href="Screenshots/areaList.png"><img src="Screenshots/areaList.png" width=120></a>
+<a href="Screenshots/areaList.png"><img src="Screenshots/areaList.png" width=200></a>
 </td><td>
-<a href="Screenshots/wifiScans.png"><img src="Screenshots/wifiScans.png" width=120></a>
+<a href="Screenshots/wifiScans.png"><img src="Screenshots/wifiScans.png" width=200></a>
 </td><td>
-<a href="Screenshots/predict.png"><img src="Screenshots/predict.png" width=120></a>
+<a href="Screenshots/predict.png"><img src="Screenshots/predict.png" width=200></a>
 </td></tr>
 </table>
 <br><br>
