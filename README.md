@@ -1,29 +1,28 @@
 # FenceIndoor
-
-
+<br>
+..explained in three simple steps:
 <table border="0" width="100%">
 <tr><td>
-<a href="Screenshots/step1.png"><img src="Screenshots/step1.png" width=300></a>
+<a href="Screenshots/step1.png"><img src="Screenshots/step1.png" width=350></a>
 </td><td>
 Step 1:<br>
 Select the area you are in and capture all WiFi signals around device
 </td></tr>
 <tr><td>
-<a href="Screenshots/step2.png"><img src="Screenshots/step2.png" width=300></a>
+<a href="Screenshots/step2.png"><img src="Screenshots/step2.png" width=350></a>
 </td><td>
 Step 2:<br>
 Train the artificial neural network with the collected data
 </td></tr>
 <tr><td>
-<a href="Screenshots/step3.png"><img src="Screenshots/step3.png" width=300></a>
+<a href="Screenshots/step3.png"><img src="Screenshots/step3.png" width=350></a>
 </td><td>
 Step 3:<br>
 As you move the neural network will make a prediction of the area you are in, 
 depending on the wifi signals caught around the device
 </td></tr>
 </table>
-
-
+<br><br>
 Sceenshots
 <table border="0" width="100%">
 <tr><td>
@@ -36,6 +35,8 @@ Sceenshots
 <a href="Screenshots/predict.png"><img src="Screenshots/predict.png" width=120></a>
 </td></tr>
 </table>
+<br><br>
+Installation:
 
 From the project directory..
 
@@ -49,7 +50,6 @@ From the project directory..
 made apk to the path:
 
 > ./FendeIndoorApp/app/build/outputs/apk/app-release-unsigned.apk
-
 
 
 - Start server:
