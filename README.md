@@ -1,5 +1,8 @@
 # FenceIndoor
  
+ 
+![Home](Screenshots/home.png)
+ 
 
 From the project directory..
 
