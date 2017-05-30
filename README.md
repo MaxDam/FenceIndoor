@@ -1,15 +1,14 @@
 # FenceIndoor
-<img src="Screenshots/ann.jpg" width=200>
- 
+<img src="Screenshots/ann.jpg" width=220>
 <table border="0" width="100%">
 <tr><td>
-<a href="Screenshots/home.png"><img src="Screenshots/home.png" width=100></a>
+<a href="Screenshots/home.png"><img src="Screenshots/home.png" width=120></a>
 </td><td>
-<a href="Screenshots/areaList.png"><img src="Screenshots/areaList.png" width=100></a>
+<a href="Screenshots/areaList.png"><img src="Screenshots/areaList.png" width=120></a>
 </td><td>
-<a href="Screenshots/wifiScans.png"><img src="Screenshots/wifiScans.png" width=100></a>
+<a href="Screenshots/wifiScans.png"><img src="Screenshots/wifiScans.png" width=120></a>
 </td><td>
-<a href="Screenshots/predict.png"><img src="Screenshots/predict.png" width=100></a>
+<a href="Screenshots/predict.png"><img src="Screenshots/predict.png" width=120></a>
 </td></tr>
 </table>
 
