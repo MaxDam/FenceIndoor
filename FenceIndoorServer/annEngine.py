@@ -122,11 +122,11 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     
     #aggiunge lo strato di input ed il primo strato nascosto
     classifier.add(Dense(units = hidden1Units, kernel_initializer = 'uniform', activation = 'relu', input_dim = inputUnits))
-    classifier.add(Dropout(rate = 0.1))
+    classifier.add(Dropout(rate = 0.2))
     
     #aggiunge il secondo strato nascosto
     classifier.add(Dense(units = hidden2Units, kernel_initializer = 'uniform', activation = 'relu'))
-    classifier.add(Dropout(rate = 0.1))
+    classifier.add(Dropout(rate = 0.2))
     
     #aggiunge lo strato di uscita
     classifier.add(Dense(units = outputUnits, kernel_initializer = 'uniform', activation = 'sigmoid'))

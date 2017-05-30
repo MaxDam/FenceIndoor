@@ -195,7 +195,6 @@ public class MainActivity extends Activity {
             if(predictMode) {
                 //richiama il servizio di scansione one-shot
                 Intent serviceScanWifiIntent = new Intent(MainActivity.this, ServiceScanWifi.class);
-                //serviceScanWifiIntent.putExtra("minScanCount", minScanCount);
                 serviceScanWifiIntent.putExtra("minScanCount", 0);
                 serviceScanWifiIntent.putExtra("maxScanCount", 1);
                 startService(serviceScanWifiIntent);

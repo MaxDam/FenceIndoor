@@ -13,6 +13,7 @@ import android.widget.ListView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.maxdam.fenceindoor.adapter.ListaWifiAdapter;
 import com.maxdam.fenceindoor.common.SessionData;
 import com.maxdam.fenceindoor.model.WifiScan;
@@ -20,6 +21,7 @@ import com.maxdam.fenceindoor.service.ServiceScanWifi;
 import com.maxdam.fenceindoor.service.ServiceSendData;
 
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -65,15 +67,9 @@ public class ScanActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            //ottiene la nuova lista all'intent
-            List<WifiScan> wifiScanList = new ArrayList<WifiScan>(
-                    Arrays.asList(
-                            new Gson().fromJson(
-                                    intent.getStringExtra("wifiScanList"),
-                                    WifiScan[].class
-                            )
-                    )
-            );
+            //ottiene la wifiScanList dall'intent
+            Type listType = new TypeToken<List<WifiScan>>(){}.getType();
+            List<WifiScan> wifiScanList = new Gson().fromJson(intent.getStringExtra("wifiScanList"), listType);
 
             //aggiorna la lista mantenendo lo scroll
             if (listView.getAdapter() == null) {
@@ -87,13 +83,13 @@ public class ScanActivity extends Activity {
             //rende invisibile l'immagine di caricamento
             findViewById(R.id.loadImage).setVisibility(View.GONE);
 
-            //invia i dati della scansione al server
-            Intent serviceSendDataIntent = new Intent(getApplicationContext(), ServiceSendData.class);
+            //invia i dati della singola scansione al server
+            /*Intent serviceSendDataIntent = new Intent(getApplicationContext(), ServiceSendData.class);
             Gson gson = new GsonBuilder().excludeFieldsWithModifiers(Modifier.TRANSIENT).create();
             String scanJson = gson.toJson(wifiScanList.toArray(new WifiScan[wifiScanList.size()]), WifiScan[].class);
             serviceSendDataIntent.putExtra("area", area);
             serviceSendDataIntent.putExtra("scan", scanJson);
-            startService(serviceSendDataIntent);
+            startService(serviceSendDataIntent);*/
         }
     };
 
@@ -101,6 +97,15 @@ public class ScanActivity extends Activity {
     private BroadcastReceiver receiverWifiScanEnd = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+
+            //invia i dati al server di tutte le scansioni effettuate
+            Intent serviceSendDataIntent = new Intent(getApplicationContext(), ServiceSendData.class);
+            String scansJson = intent.getStringExtra("scans");
+            serviceSendDataIntent.putExtra("area", area);
+            serviceSendDataIntent.putExtra("scans", scansJson);
+            startService(serviceSendDataIntent);
+
+            //torna alla main activity
             Intent intentMain = new Intent(ScanActivity.this, MainActivity.class);
             startActivity(intentMain);
         }

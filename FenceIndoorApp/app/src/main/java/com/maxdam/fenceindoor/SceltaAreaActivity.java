@@ -17,13 +17,16 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.maxdam.fenceindoor.adapter.ListaAreeAdapter;
 import com.maxdam.fenceindoor.common.SessionData;
 import com.maxdam.fenceindoor.model.Area;
+import com.maxdam.fenceindoor.model.WifiScan;
 import com.maxdam.fenceindoor.service.ServiceAddArea;
 import com.maxdam.fenceindoor.service.ServiceAree;
 
 
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 
@@ -74,10 +77,6 @@ public class SceltaAreaActivity extends Activity {
                 alert.show();
             }
         });
-
-        //ottiene dal server la lista Aree
-        Intent serviceAreeIntent = new Intent(this, ServiceAree.class);
-        this.startService(serviceAreeIntent);
 	}
 
     //evento di update acquisizione lista aree
@@ -86,7 +85,8 @@ public class SceltaAreaActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
 
             //ottiene dall'intent la lista aree restituita
-            List<Area> listaAree = Arrays.asList(new Gson().fromJson(intent.getStringExtra("aree"), Area[].class));
+            Type listType = new TypeToken<List<Area>>(){}.getType();
+            List<Area> listaAree = new Gson().fromJson(intent.getStringExtra("aree"), listType);
 
             //aggiorna l'adapter
             ListaAreeAdapter adapter = new ListaAreeAdapter(SceltaAreaActivity.this, R.layout.scelta_area_item, listaAree);
@@ -98,15 +98,30 @@ public class SceltaAreaActivity extends Activity {
     };
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        //ottiene dal server la lista Aree
+        Intent serviceAreeIntent = new Intent(this, ServiceAree.class);
+        this.startService(serviceAreeIntent);
+    }
+
+    @Override
     protected void onResume() {
+
+        //registra il receiver
         IntentFilter filter = new IntentFilter();
         filter.addAction(ServiceAree.AREE_UPDATED);
         registerReceiver(receiver, filter);
+
+
         super.onResume();
     }
 
     @Override
     protected void onPause() {
+
+        //deregistra il receiver
         unregisterReceiver(receiver);
         super.onPause();
     }

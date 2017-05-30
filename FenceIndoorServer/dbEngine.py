@@ -69,7 +69,7 @@ def deleteAreaToDb(area):
 
 
 #salva le scansioni wifi nel database
-def saveWifiScansToDb(areaId, inputJson):
+def saveWifiScansToDb(areaId, wifiList):
     
     #ottiene il record dell'area interessata in base alla chiave primaria
     areaDoc = db.areas.find_one({"_id" : ObjectId(areaId)})
@@ -86,7 +86,7 @@ def saveWifiScansToDb(areaId, inputJson):
 		
     #effettua un ciclo sulle scansioni passate in ingresso
     print("itera le scansioni per l'area: ", areaName)
-    for wifiScan in inputJson:
+    for wifiScan in wifiList:
         
         #ottiene i dettagli della singola scansione
         wifiName = wifiScan["wifiName"]
