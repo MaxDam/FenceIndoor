@@ -27,23 +27,4 @@ public class SessionData {
 		this.gson = new Gson();
 	}
 
-
-	/*private static String KEY_VETTOREMEZZO = "KEY_VETTOREMEZZO";
-	public VettoreMezzo getVettoreMezzo() {
-		 if(!sharedPrefs.contains(KEY_VETTOREMEZZO)) return null;
-		 return gson.fromJson(sharedPrefs.getString(KEY_VETTOREMEZZO, ""), VettoreMezzo.class);
-	}
-	public void setVettoreMezzo(VettoreMezzo vettoreMezzo) {
-		 prefsEditor.putString(KEY_VETTOREMEZZO, gson.toJson(vettoreMezzo)).commit();
-	}
-
-	private static String KEY_LISTAAREE = "KEY_LISTAAREE";
-	public List<Area> getListaAree() {
-		if(!sharedPrefs.contains(KEY_LISTAAREE)) return new ArrayList<Area>();
-		return new ArrayList<Area>(Arrays.asList(new Gson().fromJson(sharedPrefs.getString(KEY_LISTAAREE, ""), Area[].class)));
-	}
-	public void setListaAree(List<Area> list) {
-		prefsEditor.putString(KEY_LISTAAREE, gson.toJson(list.toArray(new Area[list.size()]))).commit();
-	}
-	*/
 }
