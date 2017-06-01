@@ -79,8 +79,8 @@ rename it and transfer it into your mobile device
 ## Start server in the local machine:
 
 ### prerequisites:
-- mongodb (depends on your SO)
-- python3 and pip (depends on your SO)
+- mongodb
+- python3 and pip
 
 ### install following python packages:
 
@@ -116,7 +116,7 @@ python fenceIndoor.py
 
 into the config.yml file, set property:
 ```
-docker = true
+docker=True
 ```
 
 ### execute following commands:
@@ -129,7 +129,7 @@ You can go to the browser and open the url
 ```
 http://localhost:8090/ping 
 ```
-to see the "it works" message 
+to see the "it works" message into browser 
 
 <br>
 <img src="Screenshots/technologies.png">
