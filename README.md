@@ -60,6 +60,8 @@ made apk to the path:
 
 > ./FendeIndoorApp/app/build/outputs/apk/app-release-unsigned.apk
 
+rename it and trasfer into device
+
 - Install server libraries:
 
 install mongodb
