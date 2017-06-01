@@ -23,7 +23,7 @@ depending on the wifi signals caught around the device
 </td></tr>
 </table>
 <br><br>
-Sceenshots
+## Sceenshots:
 <table border="0" width="100%">
 <tr><td>
 <a href="Screenshots/home.png"><img src="Screenshots/home.png" width=200></a>
@@ -36,7 +36,9 @@ Sceenshots
 </td></tr>
 </table>
 <br><br>
-## Installation:
+
+
+# Installation:
 
 From the project directory..
 
@@ -72,11 +74,11 @@ rename it and trasfer into device
 - and install follow python packages:
 
 ```
->pip install flask
->pip install pymongo
->pip install petl
->pip install tensorflow
->pip install keras
+pip install flask
+pip install pymongo
+pip install petl
+pip install tensorflow
+pip install keras
 ```
 
 - Start server in local machine:
