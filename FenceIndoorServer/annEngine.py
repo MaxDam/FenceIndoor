@@ -2,13 +2,17 @@
 #funzioni di utilita' ANN e di preparazione dati ETL
 
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-from keras.models import Sequential
-from keras.layers import Dense, Dropout
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+#from keras.models import Sequential
+#from keras.layers import Dense, Dropout
 #import petl as etl
 import math
 import dbEngine as dao
 
+from keras.models import Sequential
+from keras.layers.core import Dense, Dropout, Activation
+from keras.optimizers import SGD
+from keras.utils import np_utils
 
 #classificatore rete neurale artificiale
 classifier = None
@@ -110,16 +114,21 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #un numero di neuroni hidden proporzionale all'input ed all'output
     inputUnits = inputMatrix.shape[1]
     outputUnits = outputMatrix.shape[1]
-    hidden1Units = math.ceil((inputUnits + outputUnits) / 3 * 2)
-    hidden2Units = math.ceil((hidden1Units + outputUnits) /3)
+    hidden1Units = int((inputUnits + outputUnits) / 2)
+    hidden2Units = int((hidden1Units + outputUnits) / 2)
 
     #log
     print("matrice di input:")
     print(inputMatrix)
     
     #Normalizza la matrice di ingresso
-    scaler = StandardScaler()
+    inputMatrix = inputMatrix.astype('float32')
+    #scaler = StandardScaler()
+    scaler = MinMaxScaler(feature_range=(0, 1))
     inputMatrix = scaler.fit_transform(inputMatrix)
+    
+    #converte la classe vettore in classe matrice binaria
+    #outputMatrix = np_utils.to_categorical(outputMatrix, outputUnits)
     
     #log
     print("matrice di input normalizzata:")
@@ -132,23 +141,33 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #Inizializza la rete neurale
     classifier = Sequential()
     
-    #aggiunge lo strato di input ed il primo strato nascosto
-    classifier.add(Dense(units = hidden1Units, kernel_initializer = 'uniform', activation = 'relu', input_dim = inputUnits))
-    #classifier.add(Dropout(rate = 0.1))
+    #aggiunge lo strato di input ed il primo strato nascosto    
+    classifier.add(Dense(hidden1Units, input_shape=(inputUnits,)))
+    classifier.add(Activation('relu'))
+    classifier.add(Dropout(0.3))
     
     #aggiunge il secondo strato nascosto
-    classifier.add(Dense(units = hidden2Units, kernel_initializer = 'uniform', activation = 'relu'))
-    #classifier.add(Dropout(rate = 0.1))
+    classifier.add(Dense(hidden2Units))
+    classifier.add(Activation('relu'))
+    classifier.add(Dropout(0.3))
     
     #aggiunge lo strato di uscita
-    classifier.add(Dense(units = outputUnits, kernel_initializer = 'uniform', activation = 'sigmoid'))
-    
+    classifier.add(Dense(outputUnits))
+    classifier.add(Activation('softmax'))
+    classifier.summary()
+
     #compila la rete neurale
-    classifier.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
-    
+    #classifier.compile(loss='binary_crossentropy', optimizer='adam', metrics = ['accuracy'])
+    classifier.compile(loss='categorical_crossentropy', optimizer=SGD(), metrics=['accuracy'])
+
     #addestra la rete neurale
-    classifier.fit(inputMatrix, outputMatrix, batch_size = 10, epochs = 100)
-    
+    classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=250, verbose=1)
+
+    #classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=250, verbose=1, validation_split=0.2)
+    #score = classifier.evaluate(inputMatrix, outputMatrix, verbose=1)
+    #print("Test score:", score[0])
+    #print('Test accuracy:', score[1])
+
 
 #crea la matrice di input in base alle scansioni passate in ingresso
 def makeInputMatrixFromScans(wifiScans):
@@ -199,6 +218,7 @@ def predictArea(inputMatrix):
     #log
     print("previsione:")
     print(outputPredictMatrix * 100)
+    print("fatta di ", outputPredictMatrix.shape[1], " risultati")
     
     #scorre le aree e sceglie quella con maggiore probabilita'
     predictArea = {}

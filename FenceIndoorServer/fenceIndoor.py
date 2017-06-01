@@ -1,10 +1,3 @@
-#install packages:
-#pip install flask
-#pip install pymongo
-#pip install petl
-#pip install tensorflow
-#pip install keras
-
 
 #interfacce RESTful
 
