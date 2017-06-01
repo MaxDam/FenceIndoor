@@ -40,6 +40,16 @@ Installation:
 
 From the project directory..
 
+- Build android app:
+
+use AndroidStudio and open project folder "FendeIndoorApp"
+
+or 
+
+> cd FendeIndoorApp
+
+> ./gradlew build
+
 - Generate apk:
 
 > cd FendeIndoorApp
@@ -50,8 +60,24 @@ made apk to the path:
 
 > ./FendeIndoorApp/app/build/outputs/apk/app-release-unsigned.apk
 
-- Start server:
+- Install server libraries:
 
+install mongodb
+install python3 and pip
+and install follow python packages:
+
+> pip install flask
+> pip install pymongo
+> pip install petl
+> pip install tensorflow
+> pip install keras
+
+- Start server in local machine:
+
+start mongodb (default is localhost:27017)
+> mongod
+
+start server
 > cd FenceIndoorServer
 > python fenceIndoor.py
 
