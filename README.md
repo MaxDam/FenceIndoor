@@ -78,8 +78,8 @@ rename it and transfer it into your mobile device
 
 ## Install server libraries:
 
-- install mongodb (Depends on your SO)
-- install python3 and pip (Depends on your SO)
+- install mongodb (depends on your SO)
+- install python3 and pip (depends on your SO)
 - install following python packages:
 
 ```
