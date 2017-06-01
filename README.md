@@ -58,7 +58,7 @@ open project folder "FenceIndoorApp"
 ..otherwise use following command:
 
 ```
-cd FendeIndoorApp
+cd FenceIndoorApp
 ./gradlew build
 ```
 
@@ -66,14 +66,14 @@ cd FendeIndoorApp
 
 for generate apk still use gradle wrapper:
 ```
-cd FendeIndoorApp
+cd FenceIndoorApp
 ./gradlew assemble
 ```
 
 made apk to the path:
 
 ```
-./FendeIndoorApp/app/build/outputs/apk/app-release-unsigned.apk
+./FenceIndoorApp/app/build/outputs/apk/app-release-unsigned.apk
 ```
 rename it and transfer it into your mobile device
 
