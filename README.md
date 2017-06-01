@@ -36,11 +36,11 @@ Sceenshots
 </td></tr>
 </table>
 <br><br>
-##Installation:
+## Installation:
 
 From the project directory..
 
-##Build android app:
+## Build android app:
 
 use AndroidStudio and open project folder "FendeIndoorApp"
 
@@ -51,38 +51,46 @@ cd FendeIndoorApp
 ./gradlew build
 ```
 
-##Generate apk:
+## Generate apk:
 
-> cd FendeIndoorApp
-
-> ./gradlew assemble
+```
+cd FendeIndoorApp
+./gradlew assemble
+```
 
 made apk to the path:
 
-> ./FendeIndoorApp/app/build/outputs/apk/app-release-unsigned.apk
-
+```
+./FendeIndoorApp/app/build/outputs/apk/app-release-unsigned.apk
+```
 rename it and trasfer into device
 
-##Install server libraries:
+## Install server libraries:
 
 - install mongodb
 - install python3 and pip
 - and install follow python packages:
 
-> pip install flask
-> pip install pymongo
-> pip install petl
-> pip install tensorflow
-> pip install keras
+```
+pip install flask
+pip install pymongo
+pip install petl
+pip install tensorflow
+pip install keras
+```
 
 - Start server in local machine:
 
 - start mongodb (default is localhost:27017)
-> mongod
+```
+mongod
+```
 
 - Start the server
-> cd FenceIndoorServer
-> python fenceIndoor.py
+```
+cd FenceIndoorServer
+python fenceIndoor.py
+```
 
 <br>
 <img src="Screenshots/technologies.png">
