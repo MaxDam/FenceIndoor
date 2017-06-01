@@ -1,0 +1,11 @@
+web:
+  build: .
+  command: python -u fenceIndoor.py
+  ports:
+    - "8090:8090"
+  volumes:
+    - .:/FenceIndoorServer
+  links:
+    - db
+db:
+  image: mongo:3.0.2

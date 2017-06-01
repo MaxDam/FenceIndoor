@@ -1,13 +1,18 @@
 
 #funzioni di utilita' dao con accesso al database mongodb
 
+import os
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import commonEngine as com
 
 
-#si collega al mongodb
-clientDb = MongoClient(com.getCfg('database', 'url'))
+#si collega al mongodb e setta il database
+if(com.getCfg('docker')):
+	clientDb = MongoClient(os.environ['DB_PORT_27017_TCP_ADDR'], 27017)
+else:
+	clientDb = MongoClient(com.getCfg('database', 'url'))
+
 db = clientDb[com.getCfg('database', 'name')]
 
 

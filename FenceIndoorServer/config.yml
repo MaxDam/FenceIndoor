@@ -1,8 +1,14 @@
 
+#db configuration
 database:
     url: mongodb://localhost:27017
     name: fi
+
+#restful services configuration
 server:
     address: 0.0.0.0
     port: 8090
     debug: False
+    
+#docker configuration
+docker: False

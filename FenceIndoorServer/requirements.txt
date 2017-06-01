@@ -1,0 +1,6 @@
+flask
+pymongo
+sklearn
+numpy
+tensorflow
+keras

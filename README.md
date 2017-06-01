@@ -44,10 +44,11 @@ depending on the wifi signals caught around the device
 
 # Installation:
 
+## Installation Mobile App:
+
 From the project directory..
 
-
-## Build android app:
+### Build android app:
 
 if you use AndroidStudio 
 open project folder "FenceIndoorApp"
@@ -59,8 +60,7 @@ cd FendeIndoorApp
 ./gradlew build
 ```
 
-
-## Generate apk:
+### Generate apk:
 
 for generate apk still use gradle wrapper:
 ```
@@ -76,11 +76,13 @@ made apk to the path:
 rename it and transfer it into your mobile device
 
 
-## Install server libraries:
+## Start server in the local machine:
 
-- install mongodb (depends on your SO)
-- install python3 and pip (depends on your SO)
-- install following python packages:
+### prerequisites:
+- mongodb (depends on your SO)
+- python3 and pip (depends on your SO)
+
+### install following python packages:
 
 ```
 pip install flask
@@ -92,18 +94,42 @@ pip install tensorflow
 pip install keras
 ```
 
-## Start server in the local machine:
-
-- start mongodb (default is localhost:27017)
+### start mongodb (default is localhost:27017)
 ```
 mongod
 ```
 
-- Start the server
+### Start the server
 ```
 cd FenceIndoorServer
 python fenceIndoor.py
 ```
+
+## Start server by docker:
+
+### prerequisites:
+- docker (1.6.0 or above)
+- docker-compose (1.3.1+)
+- python 3.0 or above
+
+### set configuration:
+
+into the config.yml file, set property:
+```
+docker = true
+```
+
+### execute following commands:
+```
+docker-compose build
+docker-compose up
+```
+
+You can go to the browser and open the url 
+```
+http://localhost:8090/ping 
+```
+to see the "it works" message 
 
 <br>
 <img src="Screenshots/technologies.png">
