@@ -52,7 +52,7 @@ From the project directory..
 if you use AndroidStudio 
 open project folder "FenceIndoorApp"
 
-..otherwise:
+..otherwise use following command:
 
 ```
 cd FendeIndoorApp
@@ -62,6 +62,7 @@ cd FendeIndoorApp
 
 ## Generate apk:
 
+for generate apk still use gradle wrapper:
 ```
 cd FendeIndoorApp
 ./gradlew assemble
@@ -72,14 +73,14 @@ made apk to the path:
 ```
 ./FendeIndoorApp/app/build/outputs/apk/app-release-unsigned.apk
 ```
-rename it and trasfer into device
+rename it and transfer it into your mobile device
 
 
 ## Install server libraries:
 
-- install mongodb
-- install python3 and pip
-- and install follow python packages:
+- install mongodb (Depends on your SO)
+- install python3 and pip (Depends on your SO)
+- install following python packages:
 
 ```
 pip install flask
@@ -89,7 +90,7 @@ pip install tensorflow
 pip install keras
 ```
 
-- Start server in local machine:
+- Start server in the local machine:
 
 - start mongodb (default is localhost:27017)
 ```
