@@ -36,21 +36,22 @@ Sceenshots
 </td></tr>
 </table>
 <br><br>
-Installation:
+##Installation:
 
 From the project directory..
 
-- Build android app:
+##Build android app:
 
 use AndroidStudio and open project folder "FendeIndoorApp"
 
 or 
 
-> cd FendeIndoorApp
+```
+cd FendeIndoorApp
+./gradlew build
+```
 
-> ./gradlew build
-
-- Generate apk:
+##Generate apk:
 
 > cd FendeIndoorApp
 
@@ -62,11 +63,11 @@ made apk to the path:
 
 rename it and trasfer into device
 
-- Install server libraries:
+##Install server libraries:
 
-install mongodb
-install python3 and pip
-and install follow python packages:
+- install mongodb
+- install python3 and pip
+- and install follow python packages:
 
 > pip install flask
 > pip install pymongo
@@ -76,10 +77,10 @@ and install follow python packages:
 
 - Start server in local machine:
 
-start mongodb (default is localhost:27017)
+- start mongodb (default is localhost:27017)
 > mongod
 
-start server
+- Start the server
 > cd FenceIndoorServer
 > python fenceIndoor.py
 
