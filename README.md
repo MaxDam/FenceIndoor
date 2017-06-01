@@ -121,7 +121,10 @@ into the config.yml file, set property:
 docker=True
 ```
 
-### execute following commands:
+### build and start the docker containers:
+
+start docker 
+and execute following commands:
 ```
 docker-compose build
 docker-compose up
