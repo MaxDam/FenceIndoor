@@ -1,7 +1,7 @@
 # FenceIndoor
+..explained in three simple steps:
 
 <br>
-..explained in three simple steps:
 <table border="0" width="100%">
 <tr><td>
 <a href="Screenshots/step1.png"><img src="Screenshots/step1.png" width=400></a>
@@ -25,7 +25,7 @@ depending on the wifi signals caught around the device
 </table>
 <br>
 
-## Sceenshots:
+# Sceenshots:
 
 <br>
 <table border="0" width="100%">
