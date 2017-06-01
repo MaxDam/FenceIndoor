@@ -118,7 +118,8 @@ python fenceIndoor.py
 
 into the config.yml file, set property:
 ```
-docker=True
+#docker configuration
+docker:True
 ```
 
 ### build and start the docker containers:
