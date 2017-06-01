@@ -2,17 +2,13 @@
 #funzioni di utilita' ANN e di preparazione dati ETL
 
 import numpy as np
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
-#from keras.models import Sequential
-#from keras.layers import Dense, Dropout
+from sklearn.preprocessing import MinMaxScaler
 #import petl as etl
-import math
 import dbEngine as dao
-
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
 from keras.optimizers import SGD
-from keras.utils import np_utils
+#from keras.utils import np_utils
 
 #classificatore rete neurale artificiale
 classifier = None
@@ -123,7 +119,6 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     
     #Normalizza la matrice di ingresso
     inputMatrix = inputMatrix.astype('float32')
-    #scaler = StandardScaler()
     scaler = MinMaxScaler(feature_range=(0, 1))
     inputMatrix = scaler.fit_transform(inputMatrix)
     
