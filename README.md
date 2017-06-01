@@ -1,4 +1,5 @@
 # FenceIndoor
+
 <br>
 ..explained in three simple steps:
 <table border="0" width="100%">
@@ -22,8 +23,11 @@ As you move the neural network will make a prediction of the area you are in,
 depending on the wifi signals caught around the device
 </td></tr>
 </table>
-<br><br>
+<br>
+
 ## Sceenshots:
+
+<br>
 <table border="0" width="100%">
 <tr><td>
 <a href="Screenshots/home.png"><img src="Screenshots/home.png" width=200></a>
