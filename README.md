@@ -72,11 +72,11 @@ rename it and trasfer into device
 - and install follow python packages:
 
 ```
-pip install flask
-pip install pymongo
-pip install petl
-pip install tensorflow
-pip install keras
+>pip install flask
+>pip install pymongo
+>pip install petl
+>pip install tensorflow
+>pip install keras
 ```
 
 - Start server in local machine:
