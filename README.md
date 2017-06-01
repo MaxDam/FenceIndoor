@@ -91,7 +91,7 @@ pip install tensorflow
 pip install keras
 ```
 
-- Start server in the local machine:
+## Start server in the local machine:
 
 - start mongodb (default is localhost:27017)
 ```
