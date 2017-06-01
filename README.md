@@ -40,6 +40,8 @@ depending on the wifi signals caught around the device
 </td></tr>
 </table>
 <br><br>
+<img src="Screenshots/technologies.png">
+<br>
 
 
 # Installation:
@@ -131,6 +133,4 @@ http://localhost:8090/ping
 ```
 to see the "it works" message into browser 
 
-<br>
-<img src="Screenshots/technologies.png">
 
