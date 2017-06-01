@@ -42,6 +42,8 @@ def makeDataFromDb():
     #ottiene l'elenco delle wifi acquisite  nelle scansioni, e le itera per:
     # - assegnare a <wifiCount> il numero totale delle wifi acquisite
     # - associare con <wifiMap> ogni <wifiName> con un numero sequenziale rappresentante la colonna della matrice di input
+    wifiMap = {}
+    wifiCount = 0 
     wifiList = dao.getWifiListFromDb()
     for wifi in wifiList:
         wifiName = wifi['wifiName']
@@ -53,6 +55,9 @@ def makeDataFromDb():
     # - assegnare a <scanCount> la sommatoria dei <lastScanId> delle aree
     # - assegnare ad <areaCount> il numero totale delle aree
     # - associare con <areaMap> il nome dell'area con un numero sequenziale rappresentante la colonna della matrice di output
+    areaMap = {}
+    scanCount = 0
+    areaCount = 0
     areaList = dao.getAreaListFromDb()
     for area in areaList:
         scanCount = scanCount + area['lastScanId']
@@ -74,6 +79,7 @@ def makeDataFromDb():
     # - assegna il valore areaId al vettore di uscita outputVector[rowIndex, columnIndex]
     # - esegue lo step 5
     rowIndex = 0
+    columnIndex = 0
     areaScanList = dao.getAreaAndScanIdListFromDb()
     for areaScan in areaScanList:
         areaName = areaScan["area"]
@@ -110,8 +116,9 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #un numero di neuroni hidden proporzionale all'input ed all'output
     inputUnits = inputMatrix.shape[1]
     outputUnits = outputMatrix.shape[1]
-    hidden1Units = int((inputUnits + outputUnits) / 2)
-    hidden2Units = int((hidden1Units + outputUnits) / 2)
+    hidden1Units = int((inputUnits + outputUnits) / 2 * 3)
+    hidden2Units = int((inputUnits + outputUnits) / 2)
+    hidden34Units = int((hidden2Units + outputUnits) / 2)
 
     #log
     print("matrice di input:")
@@ -146,6 +153,16 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     classifier.add(Activation('relu'))
     classifier.add(Dropout(0.3))
     
+    #aggiunge il terzo strato nascosto
+    classifier.add(Dense(hidden34Units))
+    classifier.add(Activation('relu'))
+    classifier.add(Dropout(0.3))
+    
+    #aggiunge il quarto strato nascosto
+    classifier.add(Dense(hidden34Units))
+    classifier.add(Activation('relu'))
+    classifier.add(Dropout(0.3))
+
     #aggiunge lo strato di uscita
     classifier.add(Dense(outputUnits))
     classifier.add(Activation('softmax'))
@@ -156,7 +173,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     classifier.compile(loss='categorical_crossentropy', optimizer=SGD(), metrics=['accuracy'])
 
     #addestra la rete neurale
-    classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=250, verbose=1)
+    classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=650, verbose=1)
 
     #classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=250, verbose=1, validation_split=0.2)
     #score = classifier.evaluate(inputMatrix, outputMatrix, verbose=1)
