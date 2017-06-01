@@ -25,7 +25,7 @@ depending on the wifi signals caught around the device
 </table>
 <br>
 
-# Sceenshots:
+## Sceenshots:
 
 <br>
 <table border="0" width="100%">
@@ -46,16 +46,19 @@ depending on the wifi signals caught around the device
 
 From the project directory..
 
+
 ## Build android app:
 
-use AndroidStudio and open project folder "FendeIndoorApp"
+if you use AndroidStudio 
+open project folder "FenceIndoorApp"
 
-or 
+..otherwise:
 
 ```
 cd FendeIndoorApp
 ./gradlew build
 ```
+
 
 ## Generate apk:
 
@@ -70,6 +73,7 @@ made apk to the path:
 ./FendeIndoorApp/app/build/outputs/apk/app-release-unsigned.apk
 ```
 rename it and trasfer into device
+
 
 ## Install server libraries:
 
