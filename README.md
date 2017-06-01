@@ -85,6 +85,7 @@ rename it and transfer it into your mobile device
 ```
 pip install flask
 pip install pymongo
+pip install numpy
 pip install petl
 pip install tensorflow
 pip install keras
