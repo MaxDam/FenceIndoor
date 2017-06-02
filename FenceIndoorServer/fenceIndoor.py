@@ -157,7 +157,7 @@ def predict():
         #inizializza l'array di previsioni
         predictAreaList = []
         
-        #itera l'array di scansioni, ogni scansione contiene una wifiList da inserire nel db
+        #itera l'array di scansioni, ogni scansione contiene una wifiList da usare per effettuare una previsione
         for wifiList in inputJson:
             
             #effettua una predict dell'area
