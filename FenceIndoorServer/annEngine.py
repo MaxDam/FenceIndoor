@@ -1,13 +1,17 @@
 
 #funzioni di utilita' ANN e di preparazione dati ETL
 
+import json
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.externals import joblib 
 #import petl as etl
 import dbEngine as dao
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
-from keras.optimizers import SGD
+from keras.models import load_model
+#from keras.optimizers import SGD
+from keras.optimizers import Adam
 #from keras.utils import np_utils
 
 #classificatore rete neurale artificiale
@@ -16,53 +20,62 @@ classifier = None
 #standard scale
 scaler = None
 
-#numero totale delle reti wifi
-wifiCount = 0 
-
-#numero totale delle aree
-areaCount = 0
-
-#numero totale delle scansioni
-scanCount = 0
-
 #una dictionary ogni <wifiName> con un numero sequenziale rappresentante la colonna della matrice di input
-wifiMap = {}
+wifiMapEncode = {}
+
+#una dictionary che data la posizione dell'area ritorna i dettagli dell'area
+areaMapDecode = {}
   
-#una dictionary che associa il nome dell'area con un numero sequenziale rappresentante la colonna della matrice di output
-areaMap = {}
-  
+#file che conterra' in dictionary di wifiMapEncode
+wifiMapFile = 'tmp/wifiMap.json' 
+
+#file che conterra' in dictionary di areaMapDecode
+areaMapFile = 'tmp/areaMap.json' 
+
+#file pickle che conterrà lo scaler salvato
+scalerFile = 'tmp/scaler.pkl'
+
+#file json che conterra' la struttura della rete
+classifierFile='tmp/classifier.json'
+
+#file h5 che conterra' i pesi di addestramento salvati
+classifierWeightFile='tmp/classifier.h5'
 
 #costruisce la matrice di input ed il vettore di output 
 #in base ai dati presenti sul db
 def makeDataFromDb():
     
-    global wifiCount, wifiMap, areaCount, scanCount, areaMap
+    global wifiMapEncode, areaMapDecode
     
     #step 1 
     #ottiene l'elenco delle wifi acquisite  nelle scansioni, e le itera per:
     # - assegnare a <wifiCount> il numero totale delle wifi acquisite
     # - associare con <wifiMap> ogni <wifiName> con un numero sequenziale rappresentante la colonna della matrice di input
-    wifiMap = {}
+    wifiMapEncode = {}
     wifiCount = 0 
     wifiList = dao.getWifiListFromDb()
     for wifi in wifiList:
         wifiName = wifi['wifiName']
-        wifiMap[wifiName] = wifiCount
+        wifiMapEncode[wifiName] = wifiCount
         wifiCount = wifiCount + 1
         
     #step 2
     #ottiene le aree dal database, e le itera per:
     # - assegnare a <scanCount> la sommatoria dei <lastScanId> delle aree
     # - assegnare ad <areaCount> il numero totale delle aree
-    # - associare con <areaMap> il nome dell'area con un numero sequenziale rappresentante la colonna della matrice di output
-    areaMap = {}
+    # - associare con <areaMapEncode> il nome dell'area con un numero sequenziale rappresentante la colonna della matrice di output
+    # - associare con <areaMapDecode> il numero sequenziale rappresentante la colonna della matrice di output con i dettagli dell'area
+    areaMapEncode = {}
+    areaMapDecode = {}
     scanCount = 0
     areaCount = 0
     areaList = dao.getAreaListFromDb()
     for area in areaList:
         scanCount = scanCount + area['lastScanId']
         areaName = area['area']
-        areaMap[areaName] = areaCount
+        if areaName == '': continue
+        areaMapEncode[areaName] = areaCount
+        areaMapDecode[str(areaCount)] = area
         areaCount = areaCount + 1
     
     #step 3
@@ -83,7 +96,7 @@ def makeDataFromDb():
     areaScanList = dao.getAreaAndScanIdListFromDb()
     for areaScan in areaScanList:
         areaName = areaScan["area"]
-        columnIndex = areaMap[areaName]
+        columnIndex = areaMapEncode[areaName]
         outputMatrix[rowIndex, columnIndex] = 1.0
         
         #step 5
@@ -95,7 +108,7 @@ def makeDataFromDb():
         scanList = dao.getScansFromDb(areaName, scanId)
         for scan in scanList:
             wifiName = scan["wifiName"]
-            columnIndex = wifiMap[wifiName]
+            columnIndex = wifiMapEncode[wifiName]
             wifiLevel = scan["wifiLevel"] 
             inputMatrix[rowIndex, columnIndex] = wifiLevel
 
@@ -170,22 +183,33 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
 
     #compila la rete neurale
     #classifier.compile(loss='binary_crossentropy', optimizer='adam', metrics = ['accuracy'])
-    classifier.compile(loss='categorical_crossentropy', optimizer=SGD(), metrics=['accuracy'])
+    classifier.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
+    #classifier.compile(loss='categorical_crossentropy', optimizer=SGD(), metrics=['accuracy'])
 
     #addestra la rete neurale
-    classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=650, verbose=1)
+    classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=200, verbose=1)
+    #classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=650, verbose=1)
 
+    #ottiene il punteggio e l'accuratezza della rete
     #classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=250, verbose=1, validation_split=0.2)
     #score = classifier.evaluate(inputMatrix, outputMatrix, verbose=1)
     #print("Test score:", score[0])
     #print('Test accuracy:', score[1])
 
-
+    #salva la rete neurale su files
+    saveAnnToFiles()
+        
 #crea la matrice di input in base alle scansioni passate in ingresso
 def makeInputMatrixFromScans(wifiScans):
     
-    #inizializza a zero la matrice di ingresso    
-    inputMatrix = np.zeros((1, wifiCount))
+    global wifiMapEncode
+    
+    #ricostruisce la rete dai files, se necessario
+    if classifier is None:
+        loadAnnFromFiles()
+    
+    #inizializza a zero la matrice di ingresso 
+    inputMatrix = np.zeros((1, len(wifiMapEncode)))    
     
     #effettua un ciclo sulle scansioni passate in ingresso
     for wifiScan in wifiScans:
@@ -196,10 +220,10 @@ def makeInputMatrixFromScans(wifiScans):
         print("wifi name: ", wifiName, " level: ", wifiLevel)
 
         #se la wifiName e' tra quelle utilizzate per il training..        
-        if wifiName in wifiMap:
+        if wifiName in wifiMapEncode:
             
             #ottiene l'indice della matrice di input corrispondente al wifiName
-            columnIndex = wifiMap[wifiName]
+            columnIndex = wifiMapEncode[wifiName]
         
             #popola l'elemento columnIndex dell'inputMatrix con il valore wifiLevel
             inputMatrix[0, columnIndex] = wifiLevel
@@ -211,7 +235,7 @@ def makeInputMatrixFromScans(wifiScans):
 #effettua una predizione
 def predictArea(inputMatrix):
     
-    global classifier
+    global classifier, scaler, areaMapDecode
     
     #log
     print("matrice di input:")
@@ -228,23 +252,64 @@ def predictArea(inputMatrix):
     outputPredictMatrix = classifier.predict(inputMatrix)
     
     #log
-    print("previsione:")
-    print(outputPredictMatrix * 100)
-    print("fatta di ", outputPredictMatrix.shape[1], " risultati")
+    print("previsione (",outputPredictMatrix.shape[1], " risultati):")
+    #print(', '.join('{:0.2f}%'.format(i*100) for i in outputPredictMatrix[0]))
     
-    #scorre le aree e sceglie quella con maggiore probabilita'
-    predictArea = {}
+    #scorre i risultati per ottenere quello con maggione probabilita'
     maxPredictProbability = 0
-    predictIndex = 0
-    areaList = dao.getAreaListFromDb()
-    for area in areaList:
-
+    predictArea = {}
+    for predictIndex in range(0, outputPredictMatrix.shape[1]):
+        
+        #stampa l'area con la probabilita' associata
+        print(areaMapDecode[str(predictIndex)]["area"], ": ", '{:0.2f}%'.format(outputPredictMatrix[0, predictIndex]*100));
+        
+        #se l'area ha una probabilita' maggiore delle precedenti è quella scelta
         if outputPredictMatrix[0, predictIndex] > maxPredictProbability:
             maxPredictProbability = outputPredictMatrix[0, predictIndex]
-            predictArea = area
-
-        predictIndex = predictIndex + 1
-
+            predictArea = areaMapDecode[str(predictIndex)]
+    
     #torna l'area con maggiore probabilita'
+    #print("area predetta: ", predictArea, ", con probabilita': ", maxPredictProbability*100, "%")
     return predictArea
 
+
+#salva la rete neurale in alcuni files
+def saveAnnToFiles():
+    
+    global wifiMapEncode, areaMapDecode, classifier, scaler
+
+    #salva il file con i mapping delle reti con le colonne della matrice
+    json.dump(wifiMapEncode, open(wifiMapFile,'w'))
+    
+    #salva il file con i mapping che data la colonna della matrice ritorna l'area
+    json.dump(areaMapDecode, open(areaMapFile,'w'))
+
+    #salva lo scaler in un file pickle
+    joblib.dump(scaler, scalerFile)
+    
+    #salva la struttura della rete in json
+    classifier.save(classifierFile)
+    
+    #salva i pesi in un file h5
+    classifier.save_weights(classifierWeightFile)
+
+
+#carica la rete neurale dai files salvati
+def loadAnnFromFiles():
+    
+    global wifiMapEncode, areaMapDecode, classifier, scaler
+    
+    #ricostruisce wifiMap
+    wifiMapEncode = json.load(open(wifiMapFile))
+    
+    #ricostruisce areaMap
+    areaMapDecode = json.load(open(areaMapFile))
+
+    #ricostruisce lo scaler
+    scaler = joblib.load(scalerFile) 
+    
+    #ricostruisce la struttura della rete neurale
+    classifier = load_model(classifierFile)
+
+    #ricostruisce i pesi della ann
+    classifier.load_weights(classifierWeightFile)

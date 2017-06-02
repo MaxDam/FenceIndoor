@@ -2,5 +2,6 @@ flask
 pymongo
 sklearn
 numpy
+h5py
 tensorflow
 keras

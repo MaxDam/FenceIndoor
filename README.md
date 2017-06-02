@@ -92,6 +92,7 @@ pip install pymongo
 pip install numpy
 pip install sklearn
 pip install petl
+pip install h5py
 pip install tensorflow
 pip install keras
 ```

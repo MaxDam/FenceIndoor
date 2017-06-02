@@ -44,7 +44,6 @@ def getAreaList():
         areaList = dao.getAreaListFromDb()
     		
         #trasforma la lista di dictionary in stringa e torna l'output
-        print("risposta getAreaList");
         return com.json2Str(areaList), 200, {'ContentType':'application/json'} 
     
     except Exception as e:
