@@ -108,6 +108,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             bindPreferenceSummaryToValue(findPreference("server_path"));
             bindPreferenceSummaryToValue(findPreference("scan_count"));
+            bindPreferenceSummaryToValue(findPreference("predict_scan_count"));
             bindPreferenceSummaryToValue(findPreference("min_scan_count"));
             bindPreferenceSummaryToValue(findPreference("wifi_level_scale"));
         }

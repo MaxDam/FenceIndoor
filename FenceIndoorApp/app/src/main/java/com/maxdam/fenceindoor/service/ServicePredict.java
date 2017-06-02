@@ -43,8 +43,8 @@ public class ServicePredict extends IntentService {
 			//ottiene la sessione
 			SessionData sessionData = SessionData.getInstance(this);
 
-			//preleva la lettura della scansione
-			String scanJson = intent.getExtras().getString("scan");
+			//preleva la lettura delle scansioni
+			String scansJson = intent.getExtras().getString("scans");
 
 			//chiama il server per aggiornare le tipologie di lettera
 		    try {
@@ -55,7 +55,7 @@ public class ServicePredict extends IntentService {
 				JsonRestClient jsonClient = JsonRestClient
 						.newInstance(prefs.getString("server_path", CommonStuff.DEFAULTSERVER_PATH))
 						.addPath(method)
-						.setRequestBody(scanJson);
+						.setRequestBody(scansJson);
 	            Log.d(TAG, "request: "+jsonClient);
 	            String out = jsonClient.post().getOutputString();
 	            Log.d(TAG, "response: "+out);

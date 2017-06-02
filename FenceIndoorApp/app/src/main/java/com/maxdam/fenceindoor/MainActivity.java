@@ -30,6 +30,7 @@ public class MainActivity extends Activity {
 	private SessionData sessionData;
     private SharedPreferences prefs;
     private boolean predictMode = false;
+    private int predictScanCount = 1;
     private int minScanCount = 0;
 
     @Override
@@ -55,6 +56,13 @@ public class MainActivity extends Activity {
             minScanCount = Integer.parseInt(prefs.getString("min_scan_count", "3"));
         } catch(Exception e) {
             minScanCount = 3;
+        }
+
+        //ottiene il predict scan count
+        try {
+            predictScanCount = Integer.parseInt(prefs.getString("predict_scan_count", "1"));
+        } catch(Exception e) {
+            predictScanCount = 1;
         }
 
         //configura il bottone di scanning wifi
@@ -103,7 +111,7 @@ public class MainActivity extends Activity {
                     //richiama il servizio di scansione one-shot
                     Intent serviceScanWifiIntent = new Intent(MainActivity.this, ServiceScanWifi.class);
                     serviceScanWifiIntent.putExtra("minScanCount", minScanCount);
-                    serviceScanWifiIntent.putExtra("maxScanCount", 1);
+                    serviceScanWifiIntent.putExtra("maxScanCount", predictScanCount);
                     startService(serviceScanWifiIntent);
                 } else {
                     predictArea.setText("");
@@ -179,10 +187,10 @@ public class MainActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
 
             //chiama una predict sul server inviandogli la scansione appena fatta
-            String wifiScanListJson = intent.getStringExtra("wifiScanList");
+            /*String wifiScanListJson = intent.getStringExtra("wifiScanList");
             Intent servicePredictIntent = new Intent(MainActivity.this, ServicePredict.class);
             servicePredictIntent.putExtra("scan", wifiScanListJson);
-            MainActivity.this.startService(servicePredictIntent);
+            MainActivity.this.startService(servicePredictIntent);*/
         }
     };
 
@@ -193,10 +201,17 @@ public class MainActivity extends Activity {
 
             //se siamo in predict mode..
             if(predictMode) {
+
+                //chiama una predict sul server inviandogli la scansione appena fatta
+                String wifiScans = intent.getStringExtra("scans");
+                Intent servicePredictIntent = new Intent(MainActivity.this, ServicePredict.class);
+                servicePredictIntent.putExtra("scans", wifiScans);
+                MainActivity.this.startService(servicePredictIntent);
+
                 //richiama il servizio di scansione one-shot
                 Intent serviceScanWifiIntent = new Intent(MainActivity.this, ServiceScanWifi.class);
                 serviceScanWifiIntent.putExtra("minScanCount", 0);
-                serviceScanWifiIntent.putExtra("maxScanCount", 1);
+                serviceScanWifiIntent.putExtra("maxScanCount", predictScanCount);
                 startService(serviceScanWifiIntent);
             } else {
                 predictArea.setText("");
@@ -269,6 +284,20 @@ public class MainActivity extends Activity {
             SharedPreferences.Editor editor = prefs.edit();
             editor.putString("server_path", CommonStuff.DEBUG_SERVER_PATH);
             editor.commit();
+        }
+
+        //ottiene il min scan count
+        try {
+            minScanCount = Integer.parseInt(prefs.getString("min_scan_count", "3"));
+        } catch(Exception e) {
+            minScanCount = 3;
+        }
+
+        //ottiene il predict scan count
+        try {
+            predictScanCount = Integer.parseInt(prefs.getString("predict_scan_count", "1"));
+        } catch(Exception e) {
+            predictScanCount = 1;
         }
 
         //disabilita il predict mode

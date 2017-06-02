@@ -32,6 +32,8 @@
         <item>25 scans</item>
         <item>50 scans</item>
         <item>100 scans</item>
+        <item>250 scans</item>
+        <item>500 scans</item>
     </string-array>
     <string-array name="pref_scan_count_values">
         <item>1</item>
@@ -39,16 +41,32 @@
         <item>25</item>
         <item>50</item>
         <item>100</item>
+        <item>250</item>
+        <item>500</item>
     </string-array>
 
-    <string name="pref_title_min_scan_count">Min scan count</string>
+    <string name="pref_title_predict_scan_count">Predict scan count</string>
+    <string-array name="pref_predict_scan_count_titles">
+        <item>predict with 1 scan</item>
+        <item>predict with 3 scans</item>
+        <item>predict with 5 scans</item>
+    </string-array>
+    <string-array name="pref_predict_scan_count_values">
+        <item>1</item>
+        <item>3</item>
+        <item>5</item>
+    </string-array>
+
+    <string name="pref_title_min_scan_count">Exclude initial scan count</string>
     <string-array name="pref_min_scan_count_titles">
-        <item>1 scan</item>
-        <item>2 scan</item>
-        <item>3 scan</item>
-        <item>5 scan</item>
+        <item>no scan excluded</item>
+        <item>1 scan excluded</item>
+        <item>2 scans excluded</item>
+        <item>3 scans excluded</item>
+        <item>5 scans excluded</item>
     </string-array>
     <string-array name="pref_min_scan_count_values">
+        <item>0</item>
         <item>1</item>
         <item>2</item>
         <item>3</item>

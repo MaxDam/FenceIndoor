@@ -154,12 +154,24 @@ def predict():
         #trasforma il bodyrequest in json
         inputJson = com.bodyRequest2Json(request)
         
-        #effettua una predict dell'area
-        X = ann.makeInputMatrixFromScans(inputJson)
-        area = ann.predictArea(X)
+        #inizializza l'array di previsioni
+        predictAreaList = []
+        
+        #itera l'array di scansioni, ogni scansione contiene una wifiList da inserire nel db
+        for wifiList in inputJson:
+            
+            #effettua una predict dell'area
+            X = ann.makeInputMatrixFromScans(wifiList)
+            predictArea = ann.predictArea(X)
+            
+            #aggiunge l'area alla lista di aree predette
+            predictAreaList.append(predictArea)
+        
+        #ottiene l'area eletta come quella presente maggiormente nelle previsioni effettuate
+        electedArea = ann.electPredictArea(predictAreaList)
         
         #trasforma il json di risposta in stringa e torna l'output
-        return com.json2Str(area), 200, {'ContentType':'application/json'} 
+        return com.json2Str(electedArea), 200, {'ContentType':'application/json'} 
 
     except Exception as e:
         

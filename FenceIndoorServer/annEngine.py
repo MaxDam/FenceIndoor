@@ -183,18 +183,12 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
 
     #compila la rete neurale
     #classifier.compile(loss='binary_crossentropy', optimizer='adam', metrics = ['accuracy'])
-    classifier.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
     #classifier.compile(loss='categorical_crossentropy', optimizer=SGD(), metrics=['accuracy'])
+    classifier.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
 
     #addestra la rete neurale
-    classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=200, verbose=1)
     #classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=650, verbose=1)
-
-    #ottiene il punteggio e l'accuratezza della rete
-    #classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=250, verbose=1, validation_split=0.2)
-    #score = classifier.evaluate(inputMatrix, outputMatrix, verbose=1)
-    #print("Test score:", score[0])
-    #print('Test accuracy:', score[1])
+    classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=200, verbose=1)
 
     #salva la rete neurale su files
     saveAnnToFiles()
@@ -252,7 +246,7 @@ def predictArea(inputMatrix):
     outputPredictMatrix = classifier.predict(inputMatrix)
     
     #log
-    print("previsione (",outputPredictMatrix.shape[1], " risultati):")
+    print("previsione (",outputPredictMatrix.shape[1], " risultati ):")
     #print(', '.join('{:0.2f}%'.format(i*100) for i in outputPredictMatrix[0]))
     
     #scorre i risultati per ottenere quello con maggione probabilita'
@@ -269,7 +263,6 @@ def predictArea(inputMatrix):
             predictArea = areaMapDecode[str(predictIndex)]
     
     #torna l'area con maggiore probabilita'
-    #print("area predetta: ", predictArea, ", con probabilita': ", maxPredictProbability*100, "%")
     return predictArea
 
 
@@ -313,3 +306,22 @@ def loadAnnFromFiles():
 
     #ricostruisce i pesi della ann
     classifier.load_weights(classifierWeightFile)
+
+
+#elegge l'area predetta da una lista di aree predette
+def electPredictArea(predictAreaList):
+    
+    print("Final predict area list:")
+    print(predictAreaList)
+    
+    #cerca l'area con maggiori occorrenze trovate nella lista e la elegge come area predetta
+    maxNumVotes = 0
+    electArea = {}
+    for area in predictAreaList:
+        numVotes = predictAreaList.count(area)
+        if(numVotes > maxNumVotes):
+            maxNumVotes = numVotes
+            electArea = area
+            
+    return electArea
+        
