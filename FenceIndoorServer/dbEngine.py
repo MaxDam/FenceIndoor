@@ -2,6 +2,7 @@
 #funzioni di utilita' dao con accesso al database mongodb
 
 import os
+import pymongo
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import commonEngine as com
@@ -169,3 +170,8 @@ def getScansFromDb(area, scanId):
         scanList.append(scan)
     
     return scanList
+
+
+#indicizza le scansioni per area e scanId, in modo da avere un accesso veloce
+def indexScans():
+    db.wifiScans.create_index([("area", pymongo.ASCENDING), ("scanId", pymongo.ASCENDING)])

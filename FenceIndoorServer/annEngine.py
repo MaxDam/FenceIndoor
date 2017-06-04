@@ -3,17 +3,16 @@
 
 import json
 import numpy as np
-#from sklearn.preprocessing import MinMaxScaler
-from sklearn.preprocessing import Normalizer
-from sklearn.externals import joblib 
 #import petl as etl
-import dbEngine as dao
+from sklearn.preprocessing import StandardScaler
+#from sklearn.preprocessing import Normalizer
+from sklearn.externals import joblib 
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
 from keras.models import load_model
-#from keras.optimizers import SGD
 from keras.optimizers import Adam
-#from keras.utils import np_utils
+from keras import regularizers
+import dbEngine as dao
 
 #classificatore rete neurale artificiale
 classifier = None
@@ -100,6 +99,8 @@ def makeDataFromDb():
     # - ottiene la columnIndex dalla areaMap in base al nome dell'area
     # - assegna il valore areaId al vettore di uscita outputVector[rowIndex, columnIndex]
     # - esegue lo step 5
+    print("indicizzazione delle scansioni..")
+    dao.indexScans()
     print("acquisizione delle scansioni..")
     rowIndex = 0
     columnIndex = 0
@@ -158,13 +159,10 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     
     #Normalizza la matrice di ingresso
     inputMatrix = inputMatrix.astype('float32')
-    normalizer = Normalizer(norm='max')
-    inputMatrix = normalizer.fit_transform(inputMatrix)
-    #scaler = MinMaxScaler(feature_range=(0, 1))
-    #inputMatrix = scaler.fit_transform(inputMatrix)
-    
-    #converte la classe vettore in classe matrice binaria
-    #outputMatrix = np_utils.to_categorical(outputMatrix, outputUnits)
+    scaler = StandardScaler()
+    inputMatrix = scaler.fit_transform(inputMatrix)
+    #normalizer = Normalizer(norm='max')
+    #inputMatrix = normalizer.fit_transform(inputMatrix)
     
     #log
     print("matrice di input normalizzata:")
@@ -177,8 +175,10 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #Inizializza la rete neurale
     classifier = Sequential()
     
-    #aggiunge lo strato di input ed il primo strato nascosto    
-    classifier.add(Dense(hiddenUnits, input_shape=(inputUnits,)))
+    #aggiunge lo strato di input ed il primo strato nascosto + una regolarizzazione l2   
+    #classifier.add(Dense(hiddenUnits, input_shape=(inputUnits,)))
+    classifier.add(Dense(hiddenUnits, input_dim=inputUnits, 
+                         kernel_regularizer=regularizers.l2(0.01)))
     classifier.add(Activation('relu'))
     classifier.add(Dropout(0.3))
     
@@ -203,11 +203,9 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     classifier.summary()
 
     #compila la rete neurale
-    #classifier.compile(loss='categorical_crossentropy', optimizer=SGD(), metrics=['accuracy'])
     classifier.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
 
     #addestra la rete neurale
-    #classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=650, verbose=1)
     classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=200, verbose=1)
 
     #salva la rete neurale su files
@@ -268,8 +266,8 @@ def predictArea(inputMatrix):
     print(inputMatrix)
     
     #Normalizza la matrice di ingresso
-    inputMatrix = normalizer.transform(inputMatrix)
-    #inputMatrix = scaler.transform(inputMatrix)
+    inputMatrix = scaler.transform(inputMatrix)
+    #inputMatrix = normalizer.transform(inputMatrix)
     
     #predispone la matrice di uscita
     outputPredictMatrix = np.zeros((1, len(areaMapDecode)))
