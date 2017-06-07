@@ -80,6 +80,7 @@ made apk to the path:
 rename it and transfer it into your mobile device
 
 
+if you want, you can download apk directly hear [hear](Screenshots/FenceIndoor.apk)
 
 
 ## Start server in the local machine:
