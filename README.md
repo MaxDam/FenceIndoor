@@ -44,6 +44,7 @@ depending on the wifi signals caught around the device
 <br>
 
 
+
 # Installation:
 
 ## Installation Mobile App:
@@ -78,6 +79,7 @@ made apk to the path:
 rename it and transfer it into your mobile device
 
 
+
 ## Start server in the local machine:
 
 ### prerequisites:
@@ -107,6 +109,8 @@ mongod
 cd FenceIndoorServer
 python fenceIndoor.py
 ```
+
+
 
 ## Build and start server by docker compose:
 
@@ -138,7 +142,10 @@ http://localhost:8090/ping
 to see the "it works" message into browser 
 
 
+
 ## Start server by docker:
+
+start docker image from dockerhub image called maxdam/fenceindoor
 
 ### prerequisites:
 - docker (1.6.0 or above)
