@@ -111,6 +111,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("predict_scan_count"));
             bindPreferenceSummaryToValue(findPreference("min_scan_count"));
             bindPreferenceSummaryToValue(findPreference("wifi_level_scale"));
+            bindPreferenceSummaryToValue(findPreference("beacon_measure_type"));
         }
 
         @Override

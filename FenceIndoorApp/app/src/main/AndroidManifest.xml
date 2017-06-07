@@ -57,6 +57,7 @@
         <service android:name=".service.ServiceTraining" />
         <service android:name=".service.ServicePredict" />
         <service android:name=".service.ServiceScanWifi" />
+        <service android:name=".service.ServiceScanIBeacon" />
 
     </application>
 

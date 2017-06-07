@@ -108,7 +108,7 @@ cd FenceIndoorServer
 python fenceIndoor.py
 ```
 
-## Start server by docker:
+## Build and start server by docker compose:
 
 ### prerequisites:
 - docker (1.6.0 or above)
@@ -125,8 +125,7 @@ docker:True
 
 ### build and start the docker containers:
 
-start docker 
-and execute following commands:
+start docker and execute following commands from the project directory:
 ```
 docker-compose build
 docker-compose up
@@ -138,4 +137,23 @@ http://localhost:8090/ping
 ```
 to see the "it works" message into browser 
 
+
+## Start server by docker:
+
+### prerequisites:
+- docker (1.6.0 or above)
+
+### Start docker images:
+
+start docker and execute following commands:
+```
+docker run -it -p 27017:27017 --name db -h db mongo:3.0.2  mongod
+docker run -it -p 8090:8090 --name fenceindoor -h fenceindoor --link db:db maxdam/fenceindoor python -u fenceIndoor.py
+```
+
+You can go to the browser and open the url 
+```
+http://localhost:8090/ping 
+```
+to see the "it works" message into browser 
 

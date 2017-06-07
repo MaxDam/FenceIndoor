@@ -90,4 +90,14 @@
         <item>100</item>
         <item>1000</item>
     </string-array>
+
+    <string name="pref_title_beacon_measure_type">Beacon measure type</string>
+    <string-array name="pref_beacon_measure_type_titles">
+        <item>Rssi</item>
+        <item>Dinstance</item>
+    </string-array>
+    <string-array name="pref_beacon_measure_type_values">
+        <item>rssi</item>
+        <item>dinstance</item>
+    </string-array>
 </resources>
