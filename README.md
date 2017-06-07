@@ -45,6 +45,7 @@ depending on the wifi signals caught around the device
 
 
 
+
 # Installation:
 
 ## Installation Mobile App:
@@ -80,6 +81,7 @@ rename it and transfer it into your mobile device
 
 
 
+
 ## Start server in the local machine:
 
 ### prerequisites:
@@ -112,6 +114,7 @@ python fenceIndoor.py
 
 
 
+
 ## Build and start server by docker compose:
 
 ### prerequisites:
@@ -140,6 +143,7 @@ You can go to the browser and open the url
 http://localhost:8090/ping 
 ```
 to see the "it works" message into browser 
+
 
 
 
