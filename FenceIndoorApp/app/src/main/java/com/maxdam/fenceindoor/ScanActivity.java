@@ -17,6 +17,7 @@ import com.google.gson.reflect.TypeToken;
 import com.maxdam.fenceindoor.adapter.ListaWifiAdapter;
 import com.maxdam.fenceindoor.common.SessionData;
 import com.maxdam.fenceindoor.model.WifiScan;
+import com.maxdam.fenceindoor.service.ServiceScanIBeacon;
 import com.maxdam.fenceindoor.service.ServiceScanWifi;
 import com.maxdam.fenceindoor.service.ServiceSendData;
 
@@ -135,7 +136,7 @@ public class ScanActivity extends Activity {
             maxScanCount = 10;
         }
 
-        //richiama il servizio di scansione
+        //richiama il servizio di scansione wifi
         Intent serviceScanWifiIntent = new Intent(this, ServiceScanWifi.class);
         serviceScanWifiIntent.putExtra("minScanCount", minScanCount);
         serviceScanWifiIntent.putExtra("maxScanCount", maxScanCount);

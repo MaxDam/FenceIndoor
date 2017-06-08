@@ -6,7 +6,11 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.maxdam.fenceindoor.model.WifiScan;
 import com.maxdam.fenceindoor.util.BluetoothUtils;
 
@@ -17,6 +21,9 @@ import org.altbeacon.beacon.BeaconParser;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -59,10 +66,13 @@ public class ServiceScanIBeacon extends IntentService implements BeaconConsumer 
         activeScan.set(true);
         scanCount = 0;
 
+        //preleva i parametri di ingresso
+        minScanCount = intent.getExtras().getInt("minScanCount", 0);
+        maxScanCount = intent.getExtras().getInt("maxScanCount", 10);
+        maxScanCount += minScanCount;
+
         //start del beacon detect
         startBeaconDetect();
-
-        doInBackground();
 	}
 
 	public void doInBackground()
@@ -72,7 +82,8 @@ public class ServiceScanIBeacon extends IntentService implements BeaconConsumer 
 			@Override
 			public void run()
 			{
-				//...
+                //effettua il bind del servizio
+                beaconManager.bind(ServiceScanIBeacon.this);
 			}
 		}, 1000);
 	}
@@ -106,18 +117,14 @@ public class ServiceScanIBeacon extends IntentService implements BeaconConsumer 
             @Override
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
 
-                /*final List<Beacon> beaconList = new ArrayList<Beacon>(beacons);
-                if(listView.getAdapter() == null) {
-                    BeaconListAdapter adapter = new BeaconListAdapter(BeaconsActivity.this, beaconList);
-                    listView.setAdapter(adapter);
-                }
-                else {
-                    ((BeaconListAdapter)listView.getAdapter()).refill(beaconList);
-                }*/
+                //se la scansione non e' attiva, esce
+                if (!activeScan.get()) return;
 
+                //Log.i(TAG, "trovati " + beacons.size() + " beacons");
                 if (beacons.size() > 0) {
 
                     //scorre i dispositivi trovati
+                    List<Beacon> beaconList = new ArrayList<Beacon>(beacons);
                     for(final Beacon beacon : beacons) {
 
                         //single beacon detected
@@ -125,8 +132,49 @@ public class ServiceScanIBeacon extends IntentService implements BeaconConsumer 
                         int rssi = beacon.getRssi();
                         int txpower = beacon.getTxPower();
                         double distance = Beacon.getDistanceCalculator().calculateDistance(txpower, rssi);
-                        //...
+
+                        beaconList.add(beacon);
                     }
+                }
+
+                if(scanCount >= minScanCount) {
+
+                    //salva la wifiScanList nella lista delle scansioni
+                    //scans.add(wifiScanList);
+
+                    //invia il broadcast per notificare l'aggiornamento della lista beacons
+                    Intent broadcastIntentUpdate = new Intent();
+                    broadcastIntentUpdate.setAction(IBEACONSCAN_UPDATE);
+                    //Gson gson = new GsonBuilder().excludeFieldsWithModifiers(Modifier.TRANSIENT).create();
+                    //Type listType = new TypeToken<List<WifiScan>>(){}.getType();
+                    //broadcastIntentUpdate.putExtra("wifiScanList", gson.toJson(wifiScanList, listType));
+                    sendBroadcast(broadcastIntentUpdate);
+                }
+
+                //effettua l' unbind del servizio
+                beaconManager.unbind(ServiceScanIBeacon.this);
+
+                //si richiama ricorsivamente
+                doInBackground();
+
+                //incrementa le scansioni effettuate
+                scanCount++;
+
+                //se ha raggiunto il numero massimo di scansioni.. si ferma
+                if(scanCount >= maxScanCount) {
+
+                    //invia il broadcast per notificare la fine del ciclo di scansione
+                    Intent broadcastIntentEnd = new Intent();
+                    broadcastIntentEnd.setAction(IBEACONSCAN_END);
+                    //Type listType = new TypeToken<List<List<WifiScan>>>(){}.getType();
+                    //Gson gson = new GsonBuilder().excludeFieldsWithModifiers(Modifier.TRANSIENT).create();
+                    //broadcastIntentEnd.putExtra("scans", gson.toJson(scans, listType));
+                    sendBroadcast(broadcastIntentEnd);
+
+                    //stop della scansione ed azzeramento del count
+                    activeScan.set(false);
+                    scanCount = 0;
+                    stopBeaconDetect();
                 }
             }
         });
