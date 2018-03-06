@@ -148,7 +148,11 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #un numero di neuroni hidden proporzionale all'input ed all'output
     inputUnits = inputMatrix.shape[1]
     outputUnits = outputMatrix.shape[1]
-    hiddenUnits = int((inputUnits + outputUnits) / 2)
+    #hiddenUnits = int((inputUnits + outputUnits) / 2)
+    hiddenUnits = int(inputUnits + outputUnits)
+    
+    #numero di strati nascosti della rete
+    numberHiddenLayers = 10
     
     #log
     print("matrice di input:")
@@ -172,25 +176,16 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     
     #aggiunge lo strato di input ed il primo strato nascosto + una regolarizzazione l2   
     #classifier.add(Dense(hiddenUnits, input_shape=(inputUnits,)))
-    classifier.add(Dense(hiddenUnits, input_dim=inputUnits, 
-                         kernel_regularizer=regularizers.l2(0.01)))
+    classifier.add(Dense(hiddenUnits, input_dim=inputUnits, kernel_regularizer=regularizers.l2(0.01)))
     classifier.add(Activation('relu'))
     classifier.add(Dropout(0.3))
     
-    #aggiunge il secondo strato nascosto
-    classifier.add(Dense(hiddenUnits))
-    classifier.add(Activation('relu'))
-    classifier.add(Dropout(0.3))
-    
-    #aggiunge il terzo strato nascosto
-    classifier.add(Dense(hiddenUnits))
-    classifier.add(Activation('relu'))
-    classifier.add(Dropout(0.3))
-    
-    #aggiunge il quarto strato nascosto
-    classifier.add(Dense(hiddenUnits))
-    classifier.add(Activation('relu'))
-    classifier.add(Dropout(0.3))
+    #aggiunge numberHiddenLayer strati nascosti
+    for i in range(numberHiddenLayers):
+        #aggiunge lo strato nascosto
+        classifier.add(Dense(hiddenUnits))
+        classifier.add(Activation('relu'))
+        classifier.add(Dropout(0.3))
 
     #aggiunge lo strato di uscita
     classifier.add(Dense(outputUnits))
@@ -267,18 +262,29 @@ def predictArea(inputMatrix):
     outputPredictMatrix = np.zeros((1, len(areaMapDecode)))
     
     #log
-    print("matrice di input normalizzata:")
-    print(inputMatrix)
+    #print("matrice di input normalizzata:")
+    #print(inputMatrix)
     
     #effettua la previsione
     outputPredictMatrix = classifier.predict(inputMatrix)
     
     #log
-    print("previsione (",outputPredictMatrix.shape[1], " risultati ):")
+    #print("matrice di previsione:")
+    #print(outputPredictMatrix)
     
-    #ottiene il nome dell'area con maggiore probabilità
-    predictArea = areaMapDecode[str(np.argmax(outputPredictMatrix))]
+    #ottiene la matrice di previsione massima
+    maxPredictionMatrix = np.argmax(outputPredictMatrix, axis=1)
+    print("matrice indici di previsione massima:")
+    print(maxPredictionMatrix)
     
+    #ottiene l'indice di previsione massima considerando le occorrenze trovate
+    maxPredictionIndex = np.argmax(np.bincount(maxPredictionMatrix))
+    print("indice previsione massima:")
+    print(maxPredictionIndex)
+    
+    #ottiene l'area a massima previsione dato l'indice
+    predictArea = areaMapDecode[str(maxPredictionIndex)]
+     
     #log
     print("FINE PREDIZIONE ANN")
     
@@ -332,22 +338,4 @@ def loadAnnFromFiles():
 
     #ricostruisce i pesi della ann
     classifier.load_weights(classifierWeightFile)
-
-
-#elegge l'area predetta da una lista di aree predette
-def electPredictArea(predictAreaList):
-    
-    print("Final predict area list:")
-    print(predictAreaList)
-    
-    #cerca l'area con maggiori occorrenze trovate nella lista e la elegge come area predetta
-    maxNumVotes = 0
-    electArea = {}
-    for area in predictAreaList:
-        numVotes = predictAreaList.count(area)
-        if(numVotes > maxNumVotes):
-            maxNumVotes = numVotes
-            electArea = area
-            
-    return electArea
-        
+  

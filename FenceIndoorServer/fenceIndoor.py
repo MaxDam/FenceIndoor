@@ -6,7 +6,7 @@ import logging
 import commonEngine as com
 import dbEngine as dao
 import annEngine as ann
-
+import numpy as np
 
 #inizializza l'interfaccia rest
 app = Flask(__name__)
@@ -154,24 +154,24 @@ def predict():
         #trasforma il bodyrequest in json
         inputJson = com.bodyRequest2Json(request)
         
-        #inizializza l'array di previsioni
-        predictAreaList = []
+        #inizializza la matrice di input
+        X = []
         
         #itera l'array di scansioni, ogni scansione contiene una wifiList da usare per effettuare una previsione
         for wifiList in inputJson:
             
-            #effettua una predict dell'area
-            X = ann.makeInputMatrixFromScans(wifiList)
-            predictArea = ann.predictArea(X)
+            #accumula i segnali intercettati ottenendo una matrice
+            x = ann.makeInputMatrixFromScans(wifiList)
+            if(len(X) == 0):
+                X = x
+            else:
+                X = np.vstack((X, x))
+          
+        #effettua una predict dell'area
+        predictArea = ann.predictArea(X)
             
-            #aggiunge l'area alla lista di aree predette
-            predictAreaList.append(predictArea)
-        
-        #ottiene l'area eletta come quella presente maggiormente nelle previsioni effettuate
-        electedArea = ann.electPredictArea(predictAreaList)
-        
         #trasforma il json di risposta in stringa e torna l'output
-        return com.json2Str(electedArea), 200, {'ContentType':'application/json'} 
+        return com.json2Str(predictArea), 200, {'ContentType':'application/json'}
 
     except Exception as e:
         
