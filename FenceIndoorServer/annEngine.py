@@ -148,9 +148,6 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #un numero di neuroni hidden proporzionale all'input ed all'output
     inputUnits = inputMatrix.shape[1]
     outputUnits = outputMatrix.shape[1]
-    #hidden1Units = int((inputUnits + outputUnits) / 2 * 3)
-    #hidden2Units = int((inputUnits + outputUnits) / 2)
-    #hidden34Units = int((hidden2Units + outputUnits) / 2)
     hiddenUnits = int((inputUnits + outputUnits) / 2)
     
     #log
@@ -161,8 +158,6 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     inputMatrix = inputMatrix.astype('float32')
     scaler = StandardScaler()
     inputMatrix = scaler.fit_transform(inputMatrix)
-    #normalizer = Normalizer(norm='max')
-    #inputMatrix = normalizer.fit_transform(inputMatrix)
     
     #log
     print("matrice di input normalizzata:")
@@ -271,7 +266,6 @@ def predictArea(inputMatrix):
     
     #predispone la matrice di uscita
     outputPredictMatrix = np.zeros((1, len(areaMapDecode)))
-    #outputPredictMatrix = np_utils.to_categorical(outputPredictMatrix, outputPredictMatrix)
     
     #log
     print("matrice di input normalizzata:")
@@ -282,20 +276,9 @@ def predictArea(inputMatrix):
     
     #log
     print("previsione (",outputPredictMatrix.shape[1], " risultati ):")
-    #print(', '.join('{:0.2f}%'.format(i*100) for i in outputPredictMatrix[0]))
     
-    #scorre i risultati per ottenere quello con maggione probabilita'
-    maxPredictProbability = 0
-    predictArea = {}
-    for predictIndex in range(0, outputPredictMatrix.shape[1]):
-        
-        #stampa l'area con la probabilita' associata
-        print(areaMapDecode[str(predictIndex)]["area"], ": ", '{:0.2f}%'.format(outputPredictMatrix[0, predictIndex]*100));
-        
-        #se l'area ha una probabilita' maggiore delle precedenti è quella scelta
-        if outputPredictMatrix[0, predictIndex] > maxPredictProbability:
-            maxPredictProbability = outputPredictMatrix[0, predictIndex]
-            predictArea = areaMapDecode[str(predictIndex)]
+    #ottiene il nome dell'area con maggiore probabilità
+    predictArea = areaMapDecode[str(np.argmax(outputPredictMatrix))]
     
     #log
     print("FINE PREDIZIONE ANN")
