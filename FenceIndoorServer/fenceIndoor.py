@@ -132,7 +132,8 @@ def training():
         #costruisce i dati
         X, Y = ann.makeDataFromDb()
         
-        #crea la ANN
+        #crea l'autoencoder e la ANN
+        X = ann.buildFitAndPredictAutoencoder(X)
         ann.buildAndFitAnn(X, Y)
         
         #torna la risposta

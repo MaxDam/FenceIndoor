@@ -5,14 +5,18 @@ import json
 import numpy as np
 #import petl as etl
 from sklearn.preprocessing import StandardScaler
-#from sklearn.preprocessing import Normalizer
 from sklearn.externals import joblib 
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
 from keras.models import load_model
 from keras.optimizers import Adam
 from keras import regularizers
+from keras.layers import Input
+from keras.models import Model
 import dbEngine as dao
+
+#autoencoder
+autoencoder = None
 
 #classificatore rete neurale artificiale
 classifier = None
@@ -36,6 +40,8 @@ areaMapFile = 'tmp/areaMap.json'
 #file che conterranno i parametri della rete neurale
 scalerFile          = 'tmp/scaler.pkl'
 normalizerFile      = 'tmp/normalizer.pkl'
+autoencoderModelFile = 'tmp/autoencoder.json'
+autoencoderWeightFile= 'tmp/autoencoder.h5'
 classifierModelFile = 'tmp/classifier.json'
 classifierWeightFile= 'tmp/classifier.h5'
 
@@ -117,7 +123,7 @@ def makeDataFromDb():
         # - assegna il valore wifiLevel alla matrice di ingresso inputMatrix[rowIndex, columnIndex] 
         scanId   = areaScan["scanId"] 
         scanList = dao.getScansFromDb(areaName, scanId)
-        print("(", rowIndex, " di ",len(areaScanList),") ottenute", len(scanList), " scansioni per l'area", areaName, " con scanId", scanId)
+        #print("(", rowIndex, " di ",len(areaScanList),") ottenute", len(scanList), " scansioni per l'area", areaName, " con scanId", scanId)
         for scan in scanList:
             wifiName = scan["wifiName"]
             columnIndex = wifiMapEncode[wifiName]
@@ -133,7 +139,34 @@ def makeDataFromDb():
     #torna le matrici di input e output
     return inputMatrix, outputMatrix
     
+#costruisce una rete autoencoder con keras
+def buildFitAndPredictAutoencoder(inputMatrix):
+    
+    global autoencoder
+    
+    #neuron input/output numbers x autoencoder
+    in_out_neurons_number = inputMatrix.shape[1]
+    
+    #size of our encoded representations
+    encoding_dim = 32
+    
+    #crea il modello autoencoder
+    input_ae = Input(shape=(in_out_neurons_number,))
+    encoded = Dense(int((in_out_neurons_number + encoding_dim)/2), activation='relu')(input_ae)
+    encoded = Dense(encoding_dim, activation='relu')(encoded)
+    decoded = Dense(int((in_out_neurons_number + encoding_dim)/2), activation='relu')(encoded)
+    decoded = Dense(in_out_neurons_number, activation='sigmoid')(decoded)
+    
+    #compila l'autoencoder
+    autoencoder = Model(input_ae, decoded)
+    autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
 
+    #addestra l'autoencoder
+    autoencoder.fit(inputMatrix, inputMatrix, epochs=100, batch_size=256, shuffle=True)
+    
+    #effettua la predizione
+    return autoencoder.predict(inputMatrix)
+    
 #costruisce una rete neurale con keras
 def buildAndFitAnn(inputMatrix, outputMatrix):
     
@@ -148,44 +181,46 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #un numero di neuroni hidden proporzionale all'input ed all'output
     inputUnits = inputMatrix.shape[1]
     outputUnits = outputMatrix.shape[1]
-    #hiddenUnits = int((inputUnits + outputUnits) / 2)
-    hiddenUnits = int(inputUnits + outputUnits)
+    hiddenUnits = int((inputUnits + outputUnits) / 2)
     
     #numero di strati nascosti della rete
-    numberHiddenLayers = 10
+    numberHiddenLayers = 5
+    
+    #dropout value
+    dropout = 0.3
     
     #log
-    print("matrice di input:")
-    print(inputMatrix)
+    #print("matrice di input:")
+    #print(inputMatrix)
     
     #Normalizza la matrice di ingresso
     inputMatrix = inputMatrix.astype('float32')
-    scaler = StandardScaler()
-    inputMatrix = scaler.fit_transform(inputMatrix)
+    #scaler = StandardScaler()
+    #inputMatrix = scaler.fit_transform(inputMatrix)
     
     #log
-    print("matrice di input normalizzata:")
-    print(inputMatrix)
+    #print("matrice di input normalizzata:")
+    #print(inputMatrix)
     
     #log
-    print("matrice di output:")
-    print(outputMatrix)
+    #print("matrice di output:")
+    #print(outputMatrix)
     
     #Inizializza la rete neurale
     classifier = Sequential()
     
     #aggiunge lo strato di input ed il primo strato nascosto + una regolarizzazione l2   
-    #classifier.add(Dense(hiddenUnits, input_shape=(inputUnits,)))
-    classifier.add(Dense(hiddenUnits, input_dim=inputUnits, kernel_regularizer=regularizers.l2(0.01)))
+    classifier.add(Dense(hiddenUnits, input_shape=(inputUnits,)))
+    #classifier.add(Dense(hiddenUnits, input_dim=inputUnits, kernel_regularizer=regularizers.l2(0.01)))
     classifier.add(Activation('relu'))
-    classifier.add(Dropout(0.3))
+    classifier.add(Dropout(dropout))
     
     #aggiunge numberHiddenLayer strati nascosti
     for i in range(numberHiddenLayers):
         #aggiunge lo strato nascosto
         classifier.add(Dense(hiddenUnits))
         classifier.add(Activation('relu'))
-        classifier.add(Dropout(0.3))
+        classifier.add(Dropout(dropout))
 
     #aggiunge lo strato di uscita
     classifier.add(Dense(outputUnits))
@@ -196,7 +231,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     classifier.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
 
     #addestra la rete neurale
-    classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=200, verbose=1)
+    classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=200)
 
     #salva la rete neurale su files
     saveAnnToFiles()
@@ -210,10 +245,10 @@ def makeInputMatrixFromScans(wifiScans):
     global wifiMapEncode
     
     #log
-    print("INIZIO PREPARAZIONE DATI")
+    #print("INIZIO PREPARAZIONE DATI")
     
     #ricostruisce la rete dai files, se necessario
-    if classifier is None:
+    if classifier is None or autoencoder is None:
         loadAnnFromFiles()
     
     #inizializza a zero la matrice di ingresso 
@@ -225,7 +260,7 @@ def makeInputMatrixFromScans(wifiScans):
         #ottiene i dettagli della singola scansione
         wifiName = wifiScan["wifiName"]
         wifiLevel = wifiScan["wifiLevel"]
-        print("wifi name: ", wifiName, " level: ", wifiLevel)
+        #print("wifi name: ", wifiName, " level: ", wifiLevel)
 
         #se la wifiName e' tra quelle utilizzate per il training..        
         if wifiName in wifiMapEncode:
@@ -237,7 +272,7 @@ def makeInputMatrixFromScans(wifiScans):
             inputMatrix[0, columnIndex] = wifiLevel
     
     #log
-    print("FINE PREPARAZIONE DATI")
+    #print("FINE PREPARAZIONE DATI")
     
     #torna la matrice di input
     return inputMatrix
@@ -246,17 +281,17 @@ def makeInputMatrixFromScans(wifiScans):
 #effettua una predizione
 def predictArea(inputMatrix):
     
-    global classifier, scaler, normalizer, areaMapDecode
+    global autoencoder, classifier, scaler, normalizer, areaMapDecode
     
     #log
-    print("INIZIO PREDIZIONE ANN")
+    #print("INIZIO PREDIZIONE ANN")
     
     #log
-    print("matrice di input:")
-    print(inputMatrix)
+    #print("matrice di input:")
+    #print(inputMatrix)
     
     #Normalizza la matrice di ingresso
-    inputMatrix = scaler.transform(inputMatrix)
+    #inputMatrix = scaler.transform(inputMatrix)
     
     #predispone la matrice di uscita
     outputPredictMatrix = np.zeros((1, len(areaMapDecode)))
@@ -265,7 +300,8 @@ def predictArea(inputMatrix):
     #print("matrice di input normalizzata:")
     #print(inputMatrix)
     
-    #effettua la previsione
+    #effettua la previsione (autoencoder + ANN)
+    inputMatrix = autoencoder.predict(inputMatrix)
     outputPredictMatrix = classifier.predict(inputMatrix)
     
     #log
@@ -286,7 +322,7 @@ def predictArea(inputMatrix):
     predictArea = areaMapDecode[str(maxPredictionIndex)]
      
     #log
-    print("FINE PREDIZIONE ANN")
+    #print("FINE PREDIZIONE ANN")
     
     #torna l'area con maggiore probabilita'
     return predictArea
@@ -295,7 +331,7 @@ def predictArea(inputMatrix):
 #salva la rete neurale in alcuni files
 def saveAnnToFiles():
     
-    global wifiMapEncode, areaMapDecode, classifier, scaler, normalizer
+    global wifiMapEncode, areaMapDecode, classifier, autoencoder, scaler, normalizer
 
     #salva il file con i mapping delle reti con le colonne della matrice
     json.dump(wifiMapEncode, open(wifiMapFile,'w'))
@@ -309,17 +345,23 @@ def saveAnnToFiles():
     #salva il normalizer in un file pickle
     joblib.dump(normalizer, normalizerFile)
     
+    #salva la struttura dell'autoencoder in json
+    autoencoder.save(autoencoderModelFile)
+    
+    #salva i pesi dell'autoencoder in un file h5
+    autoencoder.save_weights(autoencoderWeightFile)
+    
     #salva la struttura della rete in json
     classifier.save(classifierModelFile)
     
-    #salva i pesi in un file h5
+    #salva i pesi della rete in un file h5
     classifier.save_weights(classifierWeightFile)
 
 
 #carica la rete neurale dai files salvati
 def loadAnnFromFiles():
     
-    global wifiMapEncode, areaMapDecode, classifier, scaler, normalizer
+    global wifiMapEncode, areaMapDecode, classifier, autoencoder, scaler, normalizer
     
     #ricostruisce wifiMap
     wifiMapEncode = json.load(open(wifiMapFile))
@@ -333,9 +375,15 @@ def loadAnnFromFiles():
     #ricostruisce il normalizer
     normalizer = joblib.load(normalizerFile) 
     
+    #ricostruisce la struttura del'autoencoder
+    autoencoder = load_model(autoencoderModelFile)
+
+    #ricostruisce i pesi dell'autoencoder
+    autoencoder.load_weights(autoencoderWeightFile)
+
     #ricostruisce la struttura della rete neurale
     classifier = load_model(classifierModelFile)
-
+    
     #ricostruisce i pesi della ann
     classifier.load_weights(classifierWeightFile)
   

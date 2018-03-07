@@ -27,7 +27,7 @@ def bodyRequest2Json(request):
     
     #ottiene il body request
     bodyRequest = request.data.decode('utf8')
-    print("request: ", bodyRequest)
+    #print("request: ", bodyRequest)
 
     #trasforma il body request in json
     return str2Json(bodyRequest)
