@@ -228,6 +228,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     classifier.add(Dense(hiddenUnits, input_shape=(inputUnits,)))
     classifier.add(BatchNormalization())
     classifier.add(Activation('tanh'))
+    #classifier.add(Activation('sigmoid'))
     classifier.add(Dropout(dropout))
     
     #aggiunge numberHiddenLayer strati nascosti
@@ -236,6 +237,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
         classifier.add(Dense(hiddenUnits))
         classifier.add(BatchNormalization())
         classifier.add(Activation('tanh'))
+        #classifier.add(Activation('sigmoid'))
         classifier.add(Dropout(dropout))
         
     #aggiunge lo strato di uscita
