@@ -8,9 +8,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.externals import joblib 
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
+from keras.layers import BatchNormalization
 from keras.models import load_model
 from keras.optimizers import Adam
-from keras import regularizers
 from keras.layers import Input
 from keras.models import Model
 import dbEngine as dao
@@ -144,11 +144,18 @@ def buildFitAndPredictAutoencoder(inputMatrix):
     
     global autoencoder
     
+    #log
+    print("ADDESTRAMENTO AUTOENCODER")
+    
     #neuron input/output numbers x autoencoder
     in_out_neurons_number = inputMatrix.shape[1]
     
     #size of our encoded representations
-    encoding_dim = 32
+    encoding_dim = 16
+    batch_size=128
+    epochs=200
+    shuffle=False
+    validation_split=0.3
     
     #crea il modello autoencoder
     input_ae = Input(shape=(in_out_neurons_number,))
@@ -162,7 +169,10 @@ def buildFitAndPredictAutoencoder(inputMatrix):
     autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
 
     #addestra l'autoencoder
-    autoencoder.fit(inputMatrix, inputMatrix, epochs=100, batch_size=256, shuffle=True)
+    autoencoder.fit(inputMatrix, inputMatrix, epochs=epochs, batch_size=batch_size, shuffle=shuffle, validation_split=validation_split)
+    
+    #log
+    print("PREDIZIONE AUTOENCODER")
     
     #effettua la predizione
     return autoencoder.predict(inputMatrix)
@@ -175,6 +185,9 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #log
     print("INIZIO PREPARAZIONE/ADDESTRAMENTO ANN")
     
+    #addestra l'autoencoder ed ottiene i dati dalla sua predizione
+    inputMatrix = buildFitAndPredictAutoencoder(inputMatrix)
+        
     #calcola: 
     #numero di neuroni di input in base al numero di colonne di inputMatrix
     #numero di neuroni di output in base al numero di colonne di outputMatrix
@@ -182,12 +195,14 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     inputUnits = inputMatrix.shape[1]
     outputUnits = outputMatrix.shape[1]
     hiddenUnits = int((inputUnits + outputUnits) / 2)
+    #hiddenUnits = int(inputUnits * 1.2)
     
-    #numero di strati nascosti della rete
-    numberHiddenLayers = 5
-    
-    #dropout value
-    dropout = 0.3
+    #hyperparameters
+    numberHiddenLayers = 10
+    dropout = 0.5
+    batch_size=128
+    epochs = 300
+    validation_split=0.3
     
     #log
     #print("matrice di input:")
@@ -195,8 +210,8 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     
     #Normalizza la matrice di ingresso
     inputMatrix = inputMatrix.astype('float32')
-    #scaler = StandardScaler()
-    #inputMatrix = scaler.fit_transform(inputMatrix)
+    scaler = StandardScaler()
+    inputMatrix = scaler.fit_transform(inputMatrix)
     
     #log
     #print("matrice di input normalizzata:")
@@ -211,19 +226,21 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     
     #aggiunge lo strato di input ed il primo strato nascosto + una regolarizzazione l2   
     classifier.add(Dense(hiddenUnits, input_shape=(inputUnits,)))
-    #classifier.add(Dense(hiddenUnits, input_dim=inputUnits, kernel_regularizer=regularizers.l2(0.01)))
-    classifier.add(Activation('relu'))
+    classifier.add(BatchNormalization())
+    classifier.add(Activation('tanh'))
     classifier.add(Dropout(dropout))
     
     #aggiunge numberHiddenLayer strati nascosti
     for i in range(numberHiddenLayers):
         #aggiunge lo strato nascosto
         classifier.add(Dense(hiddenUnits))
-        classifier.add(Activation('relu'))
+        classifier.add(BatchNormalization())
+        classifier.add(Activation('tanh'))
         classifier.add(Dropout(dropout))
-
+        
     #aggiunge lo strato di uscita
     classifier.add(Dense(outputUnits))
+    classifier.add(BatchNormalization())
     classifier.add(Activation('softmax'))
     classifier.summary()
 
@@ -231,7 +248,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     classifier.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
 
     #addestra la rete neurale
-    classifier.fit(inputMatrix, outputMatrix, batch_size=128, epochs=200)
+    classifier.fit(inputMatrix, outputMatrix, batch_size=batch_size, epochs=epochs, validation_split=validation_split)
 
     #salva la rete neurale su files
     saveAnnToFiles()
@@ -291,7 +308,7 @@ def predictArea(inputMatrix):
     #print(inputMatrix)
     
     #Normalizza la matrice di ingresso
-    #inputMatrix = scaler.transform(inputMatrix)
+    inputMatrix = scaler.transform(inputMatrix)
     
     #predispone la matrice di uscita
     outputPredictMatrix = np.zeros((1, len(areaMapDecode)))
