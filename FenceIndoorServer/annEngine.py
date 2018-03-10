@@ -192,13 +192,13 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #un numero di neuroni hidden proporzionale all'input ed all'output
     inputUnits = inputMatrix.shape[1]
     outputUnits = outputMatrix.shape[1]
-    hiddenUnits = int(inputUnits * 1.3)
+    hiddenUnits = int(inputUnits * 1.5)
     
     #hyperparameters
     numberHiddenLayers = 10
     dropout = 0.3
     batch_size=128
-    epochs = 100
+    epochs = 150
     test_size=0.33
     
     #log
