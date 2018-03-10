@@ -5,6 +5,7 @@ import json
 import numpy as np
 #import petl as etl
 from sklearn.preprocessing import StandardScaler
+from sklearn.cross_validation import train_test_split
 from sklearn.externals import joblib 
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
@@ -153,8 +154,8 @@ def buildFitAndPredictAutoencoder(inputMatrix):
     #size of our encoded representations
     encoding_dim = 16
     batch_size=128
-    epochs=200
-    shuffle=False
+    epochs=100
+    shuffle=True
     validation_split=0.3
     
     #crea il modello autoencoder
@@ -169,7 +170,7 @@ def buildFitAndPredictAutoencoder(inputMatrix):
     autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
 
     #addestra l'autoencoder
-    autoencoder.fit(inputMatrix, inputMatrix, epochs=epochs, batch_size=batch_size, shuffle=shuffle, validation_split=validation_split)
+    autoencoder.fit(inputMatrix, inputMatrix, epochs=epochs, batch_size=batch_size, shuffle=shuffle, validation_split=validation_split, verbose=1)
     
     #log
     print("PREDIZIONE AUTOENCODER")
@@ -185,24 +186,20 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #log
     print("INIZIO PREPARAZIONE/ADDESTRAMENTO ANN")
     
-    #addestra l'autoencoder ed ottiene i dati dalla sua predizione
-    inputMatrix = buildFitAndPredictAutoencoder(inputMatrix)
-        
     #calcola: 
     #numero di neuroni di input in base al numero di colonne di inputMatrix
     #numero di neuroni di output in base al numero di colonne di outputMatrix
     #un numero di neuroni hidden proporzionale all'input ed all'output
     inputUnits = inputMatrix.shape[1]
     outputUnits = outputMatrix.shape[1]
-    hiddenUnits = int((inputUnits + outputUnits) / 2)
-    #hiddenUnits = int(inputUnits * 1.2)
+    hiddenUnits = int(inputUnits * 1.3)
     
     #hyperparameters
     numberHiddenLayers = 10
-    dropout = 0.5
+    dropout = 0.3
     batch_size=128
-    epochs = 300
-    validation_split=0.3
+    epochs = 100
+    test_size=0.33
     
     #log
     #print("matrice di input:")
@@ -212,6 +209,12 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     inputMatrix = inputMatrix.astype('float32')
     scaler = StandardScaler()
     inputMatrix = scaler.fit_transform(inputMatrix)
+    
+    #addestra l'autoencoder ed ottiene i dati dalla sua predizione
+    inputMatrix = buildFitAndPredictAutoencoder(inputMatrix)
+        
+    #effettua lo split dei dati di train con quelli di test
+    inputMatrix, inputTestMatrix, outputMatrix, outputTestMatrix = train_test_split(inputMatrix, outputMatrix, test_size=test_size, random_state=42)
     
     #log
     #print("matrice di input normalizzata:")
@@ -228,7 +231,6 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     classifier.add(Dense(hiddenUnits, input_shape=(inputUnits,)))
     classifier.add(BatchNormalization())
     classifier.add(Activation('tanh'))
-    #classifier.add(Activation('sigmoid'))
     classifier.add(Dropout(dropout))
     
     #aggiunge numberHiddenLayer strati nascosti
@@ -237,20 +239,23 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
         classifier.add(Dense(hiddenUnits))
         classifier.add(BatchNormalization())
         classifier.add(Activation('tanh'))
-        #classifier.add(Activation('sigmoid'))
         classifier.add(Dropout(dropout))
         
     #aggiunge lo strato di uscita
     classifier.add(Dense(outputUnits))
     classifier.add(BatchNormalization())
     classifier.add(Activation('softmax'))
-    classifier.summary()
-
+    
     #compila la rete neurale
     classifier.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
 
     #addestra la rete neurale
-    classifier.fit(inputMatrix, outputMatrix, batch_size=batch_size, epochs=epochs, validation_split=validation_split)
+    classifier.fit(inputMatrix, outputMatrix, batch_size=batch_size, epochs=epochs, validation_data=(inputTestMatrix, outputTestMatrix), verbose=1)
+
+    #stampa il risultato della valutazione del modello
+    score = classifier.evaluate(inputTestMatrix, outputTestMatrix, verbose=0)
+    print('Test score:', score[0])
+    print('Test accuracy:', score[1])
 
     #salva la rete neurale su files
     saveAnnToFiles()
