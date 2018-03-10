@@ -5,7 +5,7 @@ import json
 import numpy as np
 #import petl as etl
 from sklearn.preprocessing import StandardScaler
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib 
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
