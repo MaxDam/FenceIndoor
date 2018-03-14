@@ -14,10 +14,13 @@ from keras.models import load_model
 from keras.optimizers import Adam
 from keras.layers import Input
 from keras.models import Model
+from keras import regularizers
 import dbEngine as dao
 
 #autoencoder
 autoencoder = None
+encoder     = None
+decoder     = None
 
 #classificatore rete neurale artificiale
 classifier = None
@@ -143,7 +146,7 @@ def makeDataFromDb():
 #costruisce una rete autoencoder con keras
 def buildFitAndPredictAutoencoder(inputMatrix):
     
-    global autoencoder
+    global autoencoder, encoder, decoder
     
     #log
     print("ADDESTRAMENTO AUTOENCODER")
@@ -153,20 +156,30 @@ def buildFitAndPredictAutoencoder(inputMatrix):
     
     #size of our encoded representations
     encoding_dim = 16
-    batch_size=128
-    epochs=100
-    shuffle=True
+    batch_size=32
+    epochs=50
+    shuffle=False
     validation_split=0.3
     
     #crea il modello autoencoder
     input_ae = Input(shape=(in_out_neurons_number,))
-    encoded = Dense(int((in_out_neurons_number + encoding_dim)/2), activation='relu')(input_ae)
-    encoded = Dense(encoding_dim, activation='relu')(encoded)
-    decoded = Dense(int((in_out_neurons_number + encoding_dim)/2), activation='relu')(encoded)
-    decoded = Dense(in_out_neurons_number, activation='sigmoid')(decoded)
+    encoded = Dense(encoding_dim, activation='relu', activity_regularizer=regularizers.l1(10e-5))(input_ae)
+    decoded = Dense(in_out_neurons_number, activation='sigmoid')(encoded)
+    autoencoder = Model(input_ae, decoded)
+
+    #deep autoencoder
+    #encoded = Dense(int((in_out_neurons_number + encoding_dim)/2), activation='relu', activity_regularizer=regularizers.l1(10e-5))(input_ae)
+    #encoded = Dense(encoding_dim, activation='relu')(encoded)
+    #decoded = Dense(int((in_out_neurons_number + encoding_dim)/2), activation='relu')(encoded)
+    #decoded = Dense(in_out_neurons_number, activation='sigmoid')(decoded)
+
+    #crea i modelli per l'encoder ed il decoder    
+    encoder = Model(input_ae, encoded)
+    encoded_input = Input(shape=(encoding_dim,))
+    decoder_layer = autoencoder.layers[-1]
+    decoder = Model(encoded_input, decoder_layer(encoded_input))
     
     #compila l'autoencoder
-    autoencoder = Model(input_ae, decoded)
     autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
 
     #addestra l'autoencoder
@@ -175,8 +188,8 @@ def buildFitAndPredictAutoencoder(inputMatrix):
     #log
     print("PREDIZIONE AUTOENCODER")
     
-    #effettua la predizione
-    return autoencoder.predict(inputMatrix)
+    #effettua la predizione con l'encoder (ottenendo lo strato codificato)
+    return encoder.predict(inputMatrix)
     
 #costruisce una rete neurale con keras
 def buildAndFitAnn(inputMatrix, outputMatrix):
@@ -185,14 +198,6 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     
     #log
     print("INIZIO PREPARAZIONE/ADDESTRAMENTO ANN")
-    
-    #calcola: 
-    #numero di neuroni di input in base al numero di colonne di inputMatrix
-    #numero di neuroni di output in base al numero di colonne di outputMatrix
-    #un numero di neuroni hidden proporzionale all'input ed all'output
-    inputUnits = inputMatrix.shape[1]
-    outputUnits = outputMatrix.shape[1]
-    hiddenUnits = int(inputUnits * 1.5)
     
     #hyperparameters
     numberHiddenLayers = 10
@@ -213,6 +218,14 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #addestra l'autoencoder ed ottiene i dati dalla sua predizione
     inputMatrix = buildFitAndPredictAutoencoder(inputMatrix)
         
+    #calcola: 
+    #numero di neuroni di input in base al numero di colonne di inputMatrix
+    #numero di neuroni di output in base al numero di colonne di outputMatrix
+    #un numero di neuroni hidden proporzionale all'input ed all'output
+    inputUnits = inputMatrix.shape[1]
+    outputUnits = outputMatrix.shape[1]
+    hiddenUnits = int(inputUnits * 1.5)
+    
     #effettua lo split dei dati di train con quelli di test
     inputMatrix, inputTestMatrix, outputMatrix, outputTestMatrix = train_test_split(inputMatrix, outputMatrix, test_size=test_size, random_state=42)
     
@@ -305,7 +318,7 @@ def makeInputMatrixFromScans(wifiScans):
 #effettua una predizione
 def predictArea(inputMatrix):
     
-    global autoencoder, classifier, scaler, normalizer, areaMapDecode
+    global encoder, classifier, scaler, normalizer, areaMapDecode
     
     #log
     #print("INIZIO PREDIZIONE ANN")
@@ -325,7 +338,7 @@ def predictArea(inputMatrix):
     #print(inputMatrix)
     
     #effettua la previsione (autoencoder + ANN)
-    inputMatrix = autoencoder.predict(inputMatrix)
+    inputMatrix = encoder.predict(inputMatrix)
     outputPredictMatrix = classifier.predict(inputMatrix)
     
     #log
@@ -355,7 +368,7 @@ def predictArea(inputMatrix):
 #salva la rete neurale in alcuni files
 def saveAnnToFiles():
     
-    global wifiMapEncode, areaMapDecode, classifier, autoencoder, scaler, normalizer
+    global wifiMapEncode, areaMapDecode, classifier, encoder, scaler, normalizer
 
     #salva il file con i mapping delle reti con le colonne della matrice
     json.dump(wifiMapEncode, open(wifiMapFile,'w'))
@@ -370,10 +383,10 @@ def saveAnnToFiles():
     joblib.dump(normalizer, normalizerFile)
     
     #salva la struttura dell'autoencoder in json
-    autoencoder.save(autoencoderModelFile)
+    encoder.save(autoencoderModelFile)
     
     #salva i pesi dell'autoencoder in un file h5
-    autoencoder.save_weights(autoencoderWeightFile)
+    encoder.save_weights(autoencoderWeightFile)
     
     #salva la struttura della rete in json
     classifier.save(classifierModelFile)
@@ -385,7 +398,7 @@ def saveAnnToFiles():
 #carica la rete neurale dai files salvati
 def loadAnnFromFiles():
     
-    global wifiMapEncode, areaMapDecode, classifier, autoencoder, scaler, normalizer
+    global wifiMapEncode, areaMapDecode, classifier, encoder, scaler, normalizer
     
     #ricostruisce wifiMap
     wifiMapEncode = json.load(open(wifiMapFile))
@@ -400,10 +413,10 @@ def loadAnnFromFiles():
     normalizer = joblib.load(normalizerFile) 
     
     #ricostruisce la struttura del'autoencoder
-    autoencoder = load_model(autoencoderModelFile)
+    encoder = load_model(autoencoderModelFile)
 
     #ricostruisce i pesi dell'autoencoder
-    autoencoder.load_weights(autoencoderWeightFile)
+    encoder.load_weights(autoencoderWeightFile)
 
     #ricostruisce la struttura della rete neurale
     classifier = load_model(classifierModelFile)
