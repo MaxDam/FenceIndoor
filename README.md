@@ -99,12 +99,14 @@ pip install sklearn
 pip install petl
 pip install h5py
 pip install tensorflow
+pip install tensorboard
 pip install keras
+
 ```
 
 #### start mongodb (default is localhost:27017)
 ```
-mongod
+sudo mongod
 ```
 
 #### Start the server
@@ -113,7 +115,17 @@ cd FenceIndoorServer
 python fenceIndoor.py
 ```
 
+#### See tensorboard results
 
+run command (into the project path)
+```
+tensorboard --logdir ./FenceIndoorServer/logs
+```
+
+You can go to the browser and open the url 
+```
+http://localhost:6006/
+```
 
 
 ## Build and start server by docker compose:
@@ -144,7 +156,6 @@ You can go to the browser and open the url
 http://localhost:8090/ping 
 ```
 to see the "it works" message into browser 
-
 
 
 

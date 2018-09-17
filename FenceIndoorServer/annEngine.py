@@ -5,6 +5,7 @@ import json
 import numpy as np
 #import petl as etl
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib 
 from keras.models import Sequential
@@ -15,6 +16,7 @@ from keras.optimizers import Adam
 from keras.layers import Input
 from keras.models import Model
 from keras import regularizers
+from keras.callbacks import TensorBoard
 import dbEngine as dao
 
 #autoencoder
@@ -157,10 +159,13 @@ def buildFitAndPredictAutoencoder(inputMatrix):
     #size of our encoded representations
     encoding_dim = 16
     batch_size=32
-    epochs=50
+    epochs=150
     shuffle=False
     validation_split=0.3
     
+    ### AUTOENCODER CLASSICO
+    
+    '''
     #crea il modello autoencoder
     input_ae = Input(shape=(in_out_neurons_number,))
     encoded = Dense(encoding_dim, activation='relu', activity_regularizer=regularizers.l1(10e-5))(input_ae)
@@ -184,12 +189,34 @@ def buildFitAndPredictAutoencoder(inputMatrix):
 
     #addestra l'autoencoder
     autoencoder.fit(inputMatrix, inputMatrix, epochs=epochs, batch_size=batch_size, shuffle=shuffle, validation_split=validation_split, verbose=1)
+    '''
+    
+    ### NUOVO AUTOENCODER
+    
+    #crea il modello autoencoder
+    inputLayer = Input(shape=(in_out_neurons_number, ))
+    encoderLayer = Dense(int(encoding_dim * 2), activation="tanh", activity_regularizer=regularizers.l1(10e-5))(inputLayer)
+    encoderLayer = Dense(encoding_dim, activation="relu")(encoderLayer)
+    decoderLayer = Dense(encoding_dim, activation='tanh')(encoderLayer)
+    decoderLayer = Dense(in_out_neurons_number, activation='relu')(decoderLayer)
+    autoencoder = Model(inputs=inputLayer, outputs=decoderLayer)
+    encoder = Model(inputLayer, encoderLayer)
+    
+    #inizializza la tensorboard per l'autoencoder (http://localhost:6006/)
+    tensorboard = TensorBoard(log_dir='./logs/autoencoder', histogram_freq=0, write_graph=True, write_images=True)
+    
+    #compila l'autoencoder
+    autoencoder.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
+    
+    #addestra l'autoencoder
+    autoencoder.fit(inputMatrix, inputMatrix, epochs=epochs, batch_size=batch_size, shuffle=shuffle, validation_split=validation_split, verbose=1, callbacks=[tensorboard])
     
     #log
     print("PREDIZIONE AUTOENCODER")
     
     #effettua la predizione con l'encoder (ottenendo lo strato codificato)
     return encoder.predict(inputMatrix)
+    #return autoencoder.predict(inputMatrix)
     
 #costruisce una rete neurale con keras
 def buildAndFitAnn(inputMatrix, outputMatrix):
@@ -213,6 +240,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #Normalizza la matrice di ingresso
     inputMatrix = inputMatrix.astype('float32')
     scaler = StandardScaler()
+    #scaler = MinMaxScaler(feature_range=(0, 1))
     inputMatrix = scaler.fit_transform(inputMatrix)
     
     #addestra l'autoencoder ed ottiene i dati dalla sua predizione
@@ -259,11 +287,14 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     classifier.add(BatchNormalization())
     classifier.add(Activation('softmax'))
     
+    #inizializza la tensorboard per l'ann
+    tensorboard = TensorBoard(log_dir='./logs/ann', histogram_freq=0, write_graph=True, write_images=True)
+    
     #compila la rete neurale
     classifier.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
 
     #addestra la rete neurale
-    classifier.fit(inputMatrix, outputMatrix, batch_size=batch_size, epochs=epochs, validation_data=(inputTestMatrix, outputTestMatrix), verbose=1)
+    classifier.fit(inputMatrix, outputMatrix, batch_size=batch_size, epochs=epochs, validation_data=(inputTestMatrix, outputTestMatrix), verbose=1, callbacks=[tensorboard])
 
     #stampa il risultato della valutazione del modello
     score = classifier.evaluate(inputTestMatrix, outputTestMatrix, verbose=0)
@@ -339,6 +370,7 @@ def predictArea(inputMatrix):
     
     #effettua la previsione (autoencoder + ANN)
     inputMatrix = encoder.predict(inputMatrix)
+    #inputMatrix = autoencoder.predict(inputMatrix)
     outputPredictMatrix = classifier.predict(inputMatrix)
     
     #log
