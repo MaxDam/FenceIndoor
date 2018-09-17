@@ -157,47 +157,19 @@ def buildFitAndPredictAutoencoder(inputMatrix):
     in_out_neurons_number = inputMatrix.shape[1]
     
     #size of our encoded representations
-    encoding_dim = 16
+    #encoding_dim = 16
+    encoding_dim = 32
     batch_size=32
     epochs=150
     shuffle=False
     validation_split=0.3
-    
-    ### AUTOENCODER CLASSICO
-    
-    '''
-    #crea il modello autoencoder
-    input_ae = Input(shape=(in_out_neurons_number,))
-    encoded = Dense(encoding_dim, activation='relu', activity_regularizer=regularizers.l1(10e-5))(input_ae)
-    decoded = Dense(in_out_neurons_number, activation='sigmoid')(encoded)
-    autoencoder = Model(input_ae, decoded)
-
-    #deep autoencoder
-    #encoded = Dense(int((in_out_neurons_number + encoding_dim)/2), activation='relu', activity_regularizer=regularizers.l1(10e-5))(input_ae)
-    #encoded = Dense(encoding_dim, activation='relu')(encoded)
-    #decoded = Dense(int((in_out_neurons_number + encoding_dim)/2), activation='relu')(encoded)
-    #decoded = Dense(in_out_neurons_number, activation='sigmoid')(decoded)
-
-    #crea i modelli per l'encoder ed il decoder    
-    encoder = Model(input_ae, encoded)
-    encoded_input = Input(shape=(encoding_dim,))
-    decoder_layer = autoencoder.layers[-1]
-    decoder = Model(encoded_input, decoder_layer(encoded_input))
-    
-    #compila l'autoencoder
-    autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
-
-    #addestra l'autoencoder
-    autoencoder.fit(inputMatrix, inputMatrix, epochs=epochs, batch_size=batch_size, shuffle=shuffle, validation_split=validation_split, verbose=1)
-    '''
-    
-    ### NUOVO AUTOENCODER
+    #dropout = 0.3
     
     #crea il modello autoencoder
     inputLayer = Input(shape=(in_out_neurons_number, ))
-    encoderLayer = Dense(int(encoding_dim * 2), activation="tanh", activity_regularizer=regularizers.l1(10e-5))(inputLayer)
+    encoderLayer = Dense(int(encoding_dim * 2), activation="tanh")(inputLayer)
     encoderLayer = Dense(encoding_dim, activation="relu")(encoderLayer)
-    decoderLayer = Dense(encoding_dim, activation='tanh')(encoderLayer)
+    decoderLayer = Dense(int(encoding_dim * 2), activation='tanh')(encoderLayer)
     decoderLayer = Dense(in_out_neurons_number, activation='relu')(decoderLayer)
     autoencoder = Model(inputs=inputLayer, outputs=decoderLayer)
     encoder = Model(inputLayer, encoderLayer)
