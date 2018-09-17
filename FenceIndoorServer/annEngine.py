@@ -239,8 +239,8 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     
     #Normalizza la matrice di ingresso
     inputMatrix = inputMatrix.astype('float32')
-    scaler = StandardScaler()
-    #scaler = MinMaxScaler(feature_range=(0, 1))
+    #scaler = StandardScaler()
+    scaler = MinMaxScaler(feature_range=(0, 1))
     inputMatrix = scaler.fit_transform(inputMatrix)
     
     #addestra l'autoencoder ed ottiene i dati dalla sua predizione
