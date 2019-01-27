@@ -46,16 +46,17 @@ if __name__ == '__main__':
     fc = ann2.FullyConnectionLayer()
     ae.verbose=0
     fc.verbose=0
-    fc.use_dropout=False
-    X, Y = getData.getTrainingData()
-    score1 = ae.buildAndFit(X)
+    fc.use_dropout=False   
+    #X, Y = getData.getTrainingData()
+    X, Y = getData.getTrainingDataFromFile()
+    scoreAE = ae.buildAndFit(X)
     X = ae.predict(X)
-    score2 = fc.buildAndFit(X, Y)
-    print('AE test score:', score1[0])
-    print('AE test accuracy:', score1[1])
-    print('ANN test score:', score2[0])
-    print('ANN test accuracy:', score2[1])
+    scoreANN = fc.buildAndFit(X, Y)
     ae.plotTrain()
+    print('AE test score:', scoreAE[0])
+    print('AE test accuracy:', scoreAE[1])
     fc.plotTrain()
+    print('ANN test score:', scoreANN[0])
+    print('ANN test accuracy:', scoreANN[1])
 
     
