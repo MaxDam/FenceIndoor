@@ -28,13 +28,18 @@ fc = FullyConnectionLayer()
 
 #training
 X, Y = getData.getTrainingData()
+#X, Y = getData.getTrainingDataFromFile()
 getData.plotTrain(X, Y)
-getData.confusionMatrix(X, Y)
-ae.buildAndFit(X)
+getData.confusionMatrix(fc, X, Y)
+scoreAE = ae.buildAndFit(X)
+ae.plotTrain()
+print('AE test score:', scoreAE[0])
+print('AE test accuracy:', scoreAE[1])
 X = ae.predict(X)
-score = fc.buildAndFit(X, Y)
-print('Test score:', score[0])
-print('Test accuracy:', score[1])
+scoreANN = fc.buildAndFit(X, Y)
+print('ANN test score:', scoreANN[0])
+print('ANN test accuracy:', scoreANN[1])
+fc.plotTrain()
 getData.save()
 ae.save()
 fc.save()
@@ -65,6 +70,8 @@ class GetData(object):
         self.wifiMapFile = 'tmp/wifiMap.json' 
         self.areaMapFile = 'tmp/areaMap.json' 
         self.scalerFile = 'tmp/scaler.pkl'
+        self.inputMapFile = 'tmp/X.csv'
+        self.outputMapFile = 'tmp/Y.csv'
 
         #è una dictionary ogni <wifiName> con un numero sequenziale rappresentante la colonna della matrice di input
         self.wifiMapEncode = {}
@@ -161,7 +168,7 @@ class GetData(object):
             rowIndex = rowIndex + 1
         print("preparate le matrici con ", len(areaScanList), " scansioni")
 
-        #scala i dati
+        #scala i dati (addestrando lo scaler)
         X = X.astype('float32')
         Y = Y.astype('float32')
         X = self.scaler.fit_transform(X)
@@ -172,6 +179,25 @@ class GetData(object):
         #torna le matrici di input e output
         return X, Y
 
+    #carica i dati di train dai files
+    def getTrainingDataFromFile(self):        
+        #ottiene i dati dai files csv
+        dfX = pd.read_csv(self.inputMapFile)
+        dfY = pd.read_csv(self.outputMapFile)
+        X = dfX.iloc[:,:].values.astype(np.int32)
+        Y = dfY.iloc[:,:].values.astype(np.int32)
+        
+        #ottiene i json dai files
+        self.wifiMapEncode = json.load(open(self.wifiMapFile))
+        self.areaMapDecode = json.load(open(self.areaMapFile))
+        
+        #scala i dati (addestrando lo scaler)
+        X = X.astype('float32')
+        Y = Y.astype('float32')
+        X = self.scaler.fit_transform(X)
+        
+        return X, Y
+        
     #torna i dati di input date le scansioni wifi 
     def getInputData(self, wifiScans):
         #inizializza a zero la matrice di input
@@ -225,11 +251,15 @@ class GetData(object):
         max_prediction_area = self.areaMapDecode[str(max_sum_predictions_id)]
         return max_prediction_area
 
+    def saveData(self, X, Y):    
+        np.savetxt(self.inputMapFile, X, delimiter=",",fmt='%.0f')
+        np.savetxt(self.outputMapFile, Y, delimiter=",",fmt='%.0f')
+
     def save(self):
         json.dump(self.wifiMapEncode, open(self.wifiMapFile,'w'))
         json.dump(self.areaMapDecode, open(self.areaMapFile,'w'))
         joblib.dump(self.scaler, self.scalerFile)
-
+    
     def load(self):
         self.wifiMapEncode = json.load(open(self.wifiMapFile))
         self.areaMapDecode = json.load(open(self.areaMapFile))
@@ -284,19 +314,24 @@ class GetData(object):
         sn.set(font_scale=1.4)
         sn.heatmap(df_cm, annot=True, fmt='g')
         print("Test Data Accuracy: %0.4f" % accuracy_score(Y_test, Y_pred))
-        
-    def saveToCsv(self):
-        X,Y = self.getTrainingData()
-        np.savetxt("./tmp/X.csv", X, delimiter=",",fmt='%.0f')
-        np.savetxt("./tmp/Y.csv", Y, delimiter=",",fmt='%.0f')
-        
+
+    
 #Autoencoder
 class Autoencoder(object):
 
     def __init__(self):
         self.autoencoderModelFile = 'tmp/ae.json'
         self.autoencoderWeightFile= 'tmp/ae.h5'
+        self.verbose=1
 
+        #hyperparameters
+        self.encoding_dim = 32
+        #self.encoding_dim = 16
+        self.batch_size=32
+        self.epochs=150
+        self.shuffle=False
+        self.validation_split=0.3
+        
     def buildAndFit(self, X):
         #log
         print("ADDESTRAMENTO AUTOENCODER")
@@ -304,20 +339,12 @@ class Autoencoder(object):
         #neuron input/output numbers x autoencoder
         in_out_neurons_number = X.shape[1]
 
-        #hyperparameters
-        encoding_dim = 32
-        #encoding_dim = 16
-        batch_size=32
-        epochs=150
-        shuffle=False
-        validation_split=0.3
-
         #crea il modello autoencoder
         inputLayer = Input(shape=(in_out_neurons_number, ))
-        encoderLayer = Dense(int(encoding_dim * 2), activation="tanh")(inputLayer)
-        encoderLayer = Dense(encoding_dim, activation="relu")(encoderLayer)
-        decoderLayer = Dense(int(encoding_dim * 2), activation='tanh')(encoderLayer)
-        decoderLayer = Dense(in_out_neurons_number, activation='relu')(decoderLayer)
+        encoderLayer = Dense(int(self.encoding_dim * 2), activation="relu")(inputLayer)
+        encoderLayer = Dense(self.encoding_dim, activation="relu")(encoderLayer)
+        decoderLayer = Dense(int(self.encoding_dim * 2), activation='relu')(encoderLayer)
+        decoderLayer = Dense(in_out_neurons_number, activation='linear')(decoderLayer)
         self.model = Model(inputs=inputLayer, outputs=decoderLayer)
         self.encoder = Model(inputLayer, encoderLayer)
 
@@ -328,7 +355,11 @@ class Autoencoder(object):
         self.model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
 
         #addestra l'autoencoder
-        self.model.fit(X, X, epochs=epochs, batch_size=batch_size, shuffle=shuffle, validation_split=validation_split, verbose=1, callbacks=[tensorboard])
+        self.history = self.model.fit(X, X, epochs=self.epochs, batch_size=self.batch_size, shuffle=self.shuffle, validation_split=self.validation_split, verbose=self.verbose, callbacks=[tensorboard])
+        
+        #torna il punteggio del training
+        score = self.model.evaluate(X, X, verbose=0)
+        return score
 
     def predict(self, X):
         return self.encoder.predict(X)
@@ -341,6 +372,23 @@ class Autoencoder(object):
         self.encoder = load_model(self.autoencoderModelFile)
         self.encoder.load_weights(self.autoencoderWeightFile)
 
+    def plotTrain(self):
+        # summarize history for accuracy
+        plt.plot(self.history.history['acc'])
+        plt.plot(self.history.history['val_acc'])
+        plt.title('model accuracy')
+        plt.ylabel('accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+        plt.show()
+        # summarize history for loss
+        plt.plot(self.history.history['loss'])
+        plt.plot(self.history.history['val_loss'])
+        plt.title('model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+        plt.show()
 
 class VarationAutoencoder(object):
 
@@ -348,7 +396,14 @@ class VarationAutoencoder(object):
         self.latent_dim = latent_dim
         self.vaeModelFile = 'tmp/vae.json'
         self.vaeWeightFile = 'tmp/vae.h5'
-
+        self.verbose = 1
+        
+        #hyperparameters
+        self.test_size=0.33
+        self.intermediate_dim = 512
+        self.batch_size = 128
+        self.epochs = 50
+        
     # reparameterization trick
     # instead of sampling from Q(z|X), sample eps = N(0,I)
     # z = z_mean + sqrt(var)*eps
@@ -363,22 +418,14 @@ class VarationAutoencoder(object):
 
     def buildAndFit(self, X):
 
-        #hyperparameters
-        test_size=0.33
-
         #effettua lo split dei dati di train con quelli di test
-        X_train, X_test = train_test_split(X, test_size=test_size, random_state=42)
-
-        #hyperparameters
-        input_shape = X.shape[1]
-        intermediate_dim = 512
-        batch_size = 128
-        epochs = 50
+        X_train, X_test = train_test_split(X, test_size=self.test_size, random_state=42)
 
         # VAE model = encoder + decoder
         # build encoder model
+        input_shape = X.shape[1]
         inputs = Input(shape=(input_shape, ), name='encoder_input')
-        x = Dense(intermediate_dim, activation='relu')(inputs)
+        x = Dense(self.intermediate_dim, activation='relu')(inputs)
         z_mean = Dense(self.latent_dim, name='z_mean')(x)
         z_log_var = Dense(self.latent_dim, name='z_log_var')(x)
 
@@ -393,7 +440,7 @@ class VarationAutoencoder(object):
 
         # build decoder model
         latent_inputs = Input(shape=(self.latent_dim,), name='z_sampling')
-        x = Dense(intermediate_dim, activation='relu')(latent_inputs)
+        x = Dense(self.intermediate_dim, activation='relu')(latent_inputs)
         outputs = Dense(input_shape, activation='sigmoid')(x)
 
         # instantiate decoder model
@@ -425,7 +472,7 @@ class VarationAutoencoder(object):
         #plot_model(vae, to_file='vae_mlp.png', show_shapes=True)
 
         # train the autoencoder
-        self.vae.fit(X_train, epochs=epochs, batch_size=batch_size, validation_data=(X_test, None))
+        self.history = self.vae.fit(X_train, epochs=self.epochs, batch_size=self.batch_size, validation_data=(X_test, None), verbose=self.verbose)
 
     def predict(self, X):
         z = self.encoder(X)[2]
@@ -439,6 +486,24 @@ class VarationAutoencoder(object):
         self.encoder = load_model(self.vaeModelFile)
         self.encoder = self.vae.load_weights(self.vaeWeightFile)
 
+    def plotTrain(self):
+        # summarize history for accuracy
+        plt.plot(self.history.history['acc'])
+        plt.plot(self.history.history['val_acc'])
+        plt.title('model accuracy')
+        plt.ylabel('accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+        plt.show()
+        # summarize history for loss
+        plt.plot(self.history.history['loss'])
+        plt.plot(self.history.history['val_loss'])
+        plt.title('model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+        plt.show()
+
 
 class VarationAutoencoder2(object):
 
@@ -446,6 +511,13 @@ class VarationAutoencoder2(object):
         self.latent_dim = latent_dim
         self.vaeModelFile = 'tmp/vae.json'
         self.vaeWeightFile = 'tmp/vae.h5'
+        self.verbose = 1
+        
+        #hyperparameters
+        self.intermediate_dim = 512
+        self.batch_size = 128
+        self.epochs = 50
+        self.validation_split=0.3
 
     def sampling(self, args):
         z_mean, z_log_var = args
@@ -453,16 +525,11 @@ class VarationAutoencoder2(object):
         return z_mean + K.exp(z_log_var / 2) * epsilon
 
     def buildAndFit(self, X):
-        #hyperparameters
-        input_shape = X.shape[1]
-        intermediate_dim = 512
-        batch_size = 128
-        epochs = 50
-        validation_split=0.3
-
+        
         #build encoder model
+        input_shape = X.shape[1]
         inputs = Input(shape=(input_shape, ), name='encoder_input')
-        vae_z_in = Dense(intermediate_dim, activation='relu')(inputs)
+        vae_z_in = Dense(self.intermediate_dim, activation='relu')(inputs)
         vae_z_mean = Dense(self.latent_dim)(vae_z_in)
         vae_z_log_var = Dense(self.latent_dim)(vae_z_in)
         # Using the Lambda Keras class around the sampling function we created above
@@ -474,7 +541,7 @@ class VarationAutoencoder2(object):
 
         # build decoder model
         latent_inputs = Input(shape=(self.latent_dim,), name='z_sampling')
-        vae_z_out = Dense(intermediate_dim, activation='relu')(latent_inputs)
+        vae_z_out = Dense(self.intermediate_dim, activation='relu')(latent_inputs)
         outputs = Dense(input_shape, activation='sigmoid')(vae_z_out)
 
         # instantiate decoder model
@@ -501,7 +568,7 @@ class VarationAutoencoder2(object):
         ##### train model ####    
         earlystop = EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=5, verbose=1, mode='auto')
         callbacks_list = [earlystop]
-        self.model.fit(X, X, shuffle=True, epochs=epochs, batch_size=batch_size, validation_split=validation_split, callbacks=callbacks_list)
+        self.history = self.model.fit(X, X, shuffle=True, epochs=self.epochs, batch_size=self.batch_size, validation_split=self.validation_split, verbose=self.verbose, callbacks=callbacks_list)
 
     def predict(self, X):
         z = self.encoder(X)[2]
@@ -515,24 +582,46 @@ class VarationAutoencoder2(object):
         self.encoder = load_model(self.vaeModelFile)
         self.encoder = self.vae.load_weights(self.vaeWeightFile)
 
+    def plotTrain(self):
+        # summarize history for accuracy
+        plt.plot(self.history.history['acc'])
+        plt.plot(self.history.history['val_acc'])
+        plt.title('model accuracy')
+        plt.ylabel('accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+        plt.show()
+        # summarize history for loss
+        plt.plot(self.history.history['loss'])
+        plt.plot(self.history.history['val_loss'])
+        plt.title('model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+        plt.show()
+
 
 #ANN
 class FullyConnectionLayer(object):
-
-    def __init__(self, areaMapDecode):
+    
+    def __init__(self):
         self.fcModelFile = 'tmp/fc.json'
         self.fcWeightFile= 'tmp/fc.h5'
-
+        self.verbose=1
+        
+        #hyperparameters
+        self.use_batchnorm = False
+        self.use_dropout = True
+        self.numberHiddenLayers = 3
+        self.dropout_input = 0.1
+        self.dropout = 0.3
+        self.batch_size=128
+        self.epochs = 200
+        self.test_size=0.33
+    
     def buildAndFit(self, X, Y):
         #log
-        print("INIZIO PREPARAZIONE/ADDESTRAMENTO ANN")
-
-        #hyperparameters
-        numberHiddenLayers = 10
-        dropout = 0.3
-        batch_size=128
-        epochs = 150
-        test_size=0.33
+        print("ADDESTRAMENTO ANN")
 
         #calcola: 
         #numero di neuroni di input in base al numero di colonne di inputMatrix
@@ -543,28 +632,34 @@ class FullyConnectionLayer(object):
         hiddenUnits = int(inputUnits * 1.5)
 
         #effettua lo split dei dati di train con quelli di test
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=42)
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=self.test_size, random_state=42)
 
         #aggiunge lo strato di input ed il primo strato nascosto + una regolarizzazione l2   
-        input = Dense(hiddenUnits, input_shape=(inputUnits,))
-        input = BatchNormalization()(input)
-        input = Activation('tanh')(input)
-        input = Dropout(dropout)(input)
+        input = Input(shape=(inputUnits,))
+        first = input
+        if self.use_batchnorm:
+            first = BatchNormalization()(first)
+        first = Activation('elu')(first)
+        if self.use_dropout:
+            first = Dropout(self.dropout_input)(first)
 
         #aggiunge numberHiddenLayer strati nascosti
-        hidden = input
-        for i in range(numberHiddenLayers):
+        hidden = first
+        for i in range(self.numberHiddenLayers):
             #aggiunge lo strato nascosto
             hidden = Dense(hiddenUnits)(hidden)
-            hidden = BatchNormalization()(hidden)
-            hidden = Activation('tanh')(hidden)
-            hidden = Dropout(dropout)(hidden)
+            if self.use_batchnorm:
+                hidden = BatchNormalization()(hidden)
+            hidden = Activation('elu')(hidden)
+            if self.use_dropout:
+                hidden = Dropout(self.dropout)(hidden)
 
         #aggiunge lo strato di uscita
         output = Dense(outputUnits)(hidden)
-        output = BatchNormalization()(output)
+        if self.use_batchnorm:
+            output = BatchNormalization()(output)
         output = Activation('softmax')(output)
-        self.model = Model(inputs=X, outputs=output)
+        self.model = Model(inputs=input, outputs=output)
 
         #inizializza la tensorboard per l'ann
         tensorboard = TensorBoard(log_dir='./logs/ann', histogram_freq=0, write_graph=True, write_images=True)
@@ -573,12 +668,10 @@ class FullyConnectionLayer(object):
         self.model.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
 
         #addestra la rete neurale
-        self.model.fit(X_train, Y_train, batch_size=batch_size, epochs=epochs, validation_data=(X_test, Y_test), verbose=1, callbacks=[tensorboard])
+        self.history = self.model.fit(X_train, Y_train, batch_size=self.batch_size, epochs=self.epochs, validation_data=(X_test, Y_test), verbose=self.verbose, callbacks=[tensorboard])
 
         #stampa il risultato della valutazione del modello
         score = self.model.evaluate(X_test, Y_test, verbose=0)
-        #print('Test score:', score[0])
-        #print('Test accuracy:', score[1])
         return score
 
     def predict(self, X):
@@ -593,3 +686,21 @@ class FullyConnectionLayer(object):
     def load(self):
         self.model = load_model(self.fcModelFile)
         self.model.load_weights(self.fcWeightFile)
+
+    def plotTrain(self):
+        # summarize history for accuracy
+        plt.plot(self.history.history['acc'])
+        plt.plot(self.history.history['val_acc'])
+        plt.title('model accuracy')
+        plt.ylabel('accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+        plt.show()
+        # summarize history for loss
+        plt.plot(self.history.history['loss'])
+        plt.plot(self.history.history['val_loss'])
+        plt.title('model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+        plt.show()
