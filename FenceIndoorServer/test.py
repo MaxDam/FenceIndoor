@@ -43,6 +43,8 @@ if __name__ == '__main__':
     #importData()
     getData = ann2.GetData()
     ae = ann2.Autoencoder()
+    #ae = ann2.VarationAutoencoder(10)
+    #ae = ann2.VarationAutoencoder2(10)
     fc = ann2.FullyConnectionLayer()
     ae.verbose=0
     fc.verbose=0

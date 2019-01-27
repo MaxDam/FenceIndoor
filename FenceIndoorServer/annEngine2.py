@@ -326,10 +326,11 @@ class Autoencoder(object):
 
         #hyperparameters
         self.use_dropout = True
+        self.use_autodimension = True
         self.encoding_dim = 32
         #self.encoding_dim = 16
         self.hidden_dim = self.encoding_dim * 2
-        self.dropout = 0.5
+        self.dropout = 0.3
         self.batch_size=32
         self.epochs=200
         self.shuffle=False
@@ -340,14 +341,19 @@ class Autoencoder(object):
         #log
         print("ADDESTRAMENTO AUTOENCODER")
 
+        #attrubuisce le dimensioni degli strati in automatico in base alla dimensione dell'input
+        if self.use_autodimension:
+            self.encoding_dim = int(X.shape[1] / 4)
+            self.hidden_dim = int(X.shape[1] / 2)
+
         #crea il modello autoencoder
         in_out_neurons_number = X.shape[1]
         inputLayer = Input(shape=(in_out_neurons_number, ))
-        encoderLayer = Dense(self.hidden_dim, activation="elu")(inputLayer)
+        encoderLayer = Dense(self.hidden_dim, activation="tanh")(inputLayer)
         if self.use_dropout:
             encoderLayer = Dropout(self.dropout)(encoderLayer)
-        encoderLayer = Dense(self.encoding_dim, activation="elu")(encoderLayer)
-        decoderLayer = Dense(self.hidden_dim, activation='elu')(encoderLayer)
+        encoderLayer = Dense(self.encoding_dim, activation="tanh")(encoderLayer)
+        decoderLayer = Dense(self.hidden_dim, activation='tanh')(encoderLayer)
         if self.use_dropout:
             decoderLayer = Dropout(self.dropout)(decoderLayer)
         decoderLayer = Dense(in_out_neurons_number, activation='sigmoid')(decoderLayer)
@@ -414,7 +420,7 @@ class VarationAutoencoder(object):
     # reparameterization trick
     # instead of sampling from Q(z|X), sample eps = N(0,I)
     # z = z_mean + sqrt(var)*eps
-    def sampling(args):
+    def sampling(self, args):
         z_mean, z_log_var = args
         # K is the keras backend
         batch = K.shape(z_mean)[0]
@@ -481,8 +487,12 @@ class VarationAutoencoder(object):
         # train the autoencoder
         self.history = self.vae.fit(X_train, epochs=self.epochs, batch_size=self.batch_size, validation_data=(X_test, None), verbose=self.verbose)
 
+        #stampa il risultato della valutazione del modello
+        score = self.vae.evaluate(X_test, X_test, verbose=0)
+        return score
+    
     def predict(self, X):
-        z = self.encoder(X)[2]
+        z = self.encoder.predict(X)[2]
         return z
 
     def save(self):
@@ -494,14 +504,6 @@ class VarationAutoencoder(object):
         self.encoder = self.vae.load_weights(self.vaeWeightFile)
 
     def plotTrain(self):
-        # summarize history for accuracy
-        plt.plot(self.history.history['acc'])
-        plt.plot(self.history.history['val_acc'])
-        plt.title('model accuracy')
-        plt.ylabel('accuracy')
-        plt.xlabel('epoch')
-        plt.legend(['train', 'test'], loc='upper left')
-        plt.show()
         # summarize history for loss
         plt.plot(self.history.history['loss'])
         plt.plot(self.history.history['val_loss'])
@@ -525,6 +527,7 @@ class VarationAutoencoder2(object):
         self.batch_size = 128
         self.epochs = 50
         self.validation_split=0.3
+        self.test_size=0.33
 
     def sampling(self, args):
         z_mean, z_log_var = args
@@ -533,6 +536,9 @@ class VarationAutoencoder2(object):
 
     def buildAndFit(self, X):
         
+        #effettua lo split dei dati di train con quelli di test
+        X_train, X_test = train_test_split(X, test_size=self.test_size, random_state=42)
+
         #build encoder model
         input_shape = X.shape[1]
         inputs = Input(shape=(input_shape, ), name='encoder_input')
@@ -575,10 +581,14 @@ class VarationAutoencoder2(object):
         ##### train model ####    
         earlystop = EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=5, verbose=1, mode='auto')
         callbacks_list = [earlystop]
-        self.history = self.model.fit(X, X, shuffle=True, epochs=self.epochs, batch_size=self.batch_size, validation_split=self.validation_split, verbose=self.verbose, callbacks=callbacks_list)
+        self.history = self.vae.fit(X_train, X_train, shuffle=True, epochs=self.epochs, batch_size=self.batch_size, validation_split=self.validation_split, verbose=self.verbose, callbacks=callbacks_list)
 
+        #stampa il risultato della valutazione del modello
+        score = self.vae.evaluate(X_test, X_test, verbose=0)
+        return score
+    
     def predict(self, X):
-        z = self.encoder(X)[2]
+        z = self.encoder.predict(X)[2]
         return z
 
     def save(self):
@@ -590,11 +600,19 @@ class VarationAutoencoder2(object):
         self.encoder = self.vae.load_weights(self.vaeWeightFile)
 
     def plotTrain(self):
-        # summarize history for accuracy
-        plt.plot(self.history.history['acc'])
-        plt.plot(self.history.history['val_acc'])
-        plt.title('model accuracy')
-        plt.ylabel('accuracy')
+        # summarize history for r_loss
+        plt.plot(self.history.history['vae_r_loss'])
+        plt.plot(self.history.history['val_vae_r_loss'])
+        plt.title('model r loss')
+        plt.ylabel('r loss')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+        plt.show()
+        # summarize history for kl_loss
+        plt.plot(self.history.history['vae_kl_loss'])
+        plt.plot(self.history.history['val_vae_kl_loss'])
+        plt.title('model kl loss')
+        plt.ylabel('kl loss')
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
         plt.show()
@@ -606,7 +624,6 @@ class VarationAutoencoder2(object):
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
         plt.show()
-
 
 #ANN
 class FullyConnectionLayer(object):
