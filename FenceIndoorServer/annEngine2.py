@@ -325,26 +325,32 @@ class Autoencoder(object):
         self.verbose=1
 
         #hyperparameters
+        self.use_dropout = True
         self.encoding_dim = 32
         #self.encoding_dim = 16
+        self.hidden_dim = self.encoding_dim * 2
+        self.dropout = 0.5
         self.batch_size=32
-        self.epochs=150
+        self.epochs=200
         self.shuffle=False
         self.validation_split=0.3
+        self.lr=0.001
         
     def buildAndFit(self, X):
         #log
         print("ADDESTRAMENTO AUTOENCODER")
 
-        #neuron input/output numbers x autoencoder
-        in_out_neurons_number = X.shape[1]
-
         #crea il modello autoencoder
+        in_out_neurons_number = X.shape[1]
         inputLayer = Input(shape=(in_out_neurons_number, ))
-        encoderLayer = Dense(int(self.encoding_dim * 2), activation="relu")(inputLayer)
-        encoderLayer = Dense(self.encoding_dim, activation="relu")(encoderLayer)
-        decoderLayer = Dense(int(self.encoding_dim * 2), activation='relu')(encoderLayer)
-        decoderLayer = Dense(in_out_neurons_number, activation='linear')(decoderLayer)
+        encoderLayer = Dense(self.hidden_dim, activation="elu")(inputLayer)
+        if self.use_dropout:
+            encoderLayer = Dropout(self.dropout)(encoderLayer)
+        encoderLayer = Dense(self.encoding_dim, activation="elu")(encoderLayer)
+        decoderLayer = Dense(self.hidden_dim, activation='elu')(encoderLayer)
+        if self.use_dropout:
+            decoderLayer = Dropout(self.dropout)(decoderLayer)
+        decoderLayer = Dense(in_out_neurons_number, activation='sigmoid')(decoderLayer)
         self.model = Model(inputs=inputLayer, outputs=decoderLayer)
         self.encoder = Model(inputLayer, encoderLayer)
 
@@ -352,7 +358,8 @@ class Autoencoder(object):
         tensorboard = TensorBoard(log_dir='./logs/autoencoder', histogram_freq=0, write_graph=True, write_images=True)
 
         #compila l'autoencoder
-        self.model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
+        optimizer = Adam(lr=self.lr)
+        self.model.compile(optimizer=optimizer, loss='mean_squared_error', metrics=['accuracy'])
 
         #addestra l'autoencoder
         self.history = self.model.fit(X, X, epochs=self.epochs, batch_size=self.batch_size, shuffle=self.shuffle, validation_split=self.validation_split, verbose=self.verbose, callbacks=[tensorboard])
@@ -618,6 +625,7 @@ class FullyConnectionLayer(object):
         self.batch_size=128
         self.epochs = 200
         self.test_size=0.33
+        self.lr=0.001
     
     def buildAndFit(self, X, Y):
         #log
@@ -665,7 +673,8 @@ class FullyConnectionLayer(object):
         tensorboard = TensorBoard(log_dir='./logs/ann', histogram_freq=0, write_graph=True, write_images=True)
 
         #compila la rete neurale
-        self.model.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
+        optimizer = Adam(lr=self.lr)
+        self.model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
         #addestra la rete neurale
         self.history = self.model.fit(X_train, Y_train, batch_size=self.batch_size, epochs=self.epochs, validation_data=(X_test, Y_test), verbose=self.verbose, callbacks=[tensorboard])
