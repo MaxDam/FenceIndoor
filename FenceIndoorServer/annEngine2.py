@@ -190,7 +190,9 @@ class GetData(object):
         #ottiene i json dai files
         self.wifiMapEncode = json.load(open(self.wifiMapFile))
         self.areaMapDecode = json.load(open(self.areaMapFile))
-        
+        self.wifiMapDecode = {str(v): k for k, v in self.wifiMapEncode.items()}
+        self.areaMapEncode = {v['area']: int(k) for k, v in self.areaMapDecode.items()}
+
         #scala i dati (addestrando lo scaler)
         X = X.astype('float32')
         Y = Y.astype('float32')
@@ -280,13 +282,13 @@ class GetData(object):
             plotHandles = []
             fig1 = plt.figure()
             ax1 = fig1.add_subplot(111)
-            for rowIndex in range(0, value.shape[0]):
-                ph, = ax1.plot(value[rowIndex], label=rowIndex)
+            for wifiIndex in range(0, value.shape[1]):
+                ph, = ax1.plot(value[wifiIndex], label=wifiIndex)
                 plotHandles.append(ph)
-                wifiName = self.wifiMapDecode[str(rowIndex)]
+                wifiName = self.wifiMapDecode[str(wifiIndex)]
                 labels.append(wifiName)
             area = self.areaMapDecode[str(areaIndex)]
-            plt.title(area)
+            plt.title(area['area'])
             plt.legend(plotHandles, labels, loc='upper left', ncol=1, bbox_to_anchor=(1, 1))
 
     def plotInput(self, X):
@@ -294,26 +296,13 @@ class GetData(object):
         plotHandles = []
         fig1 = plt.figure()
         ax1 = fig1.add_subplot(111)
-        for rowIndex in range(0, X.shape[0]):
-            ph, = ax1.plot(X[rowIndex], label=rowIndex)
+        for wifiIndex in range(0, X.shape[1]):
+            ph, = ax1.plot(X[wifiIndex], label=wifiIndex)
             plotHandles.append(ph)
-            wifiName = self.wifiMapDecode[str(rowIndex)]
+            wifiName = self.wifiMapDecode[str(wifiIndex)]
             labels.append(wifiName)
         plt.title("inputs")
         plt.legend(plotHandles, labels, loc='upper left', ncol=1, bbox_to_anchor=(1, 1))
-
-    def confusionMatrix(self, fc, X_test, Y_test):
-        Y_pred = fc.predict(X_test)
-        cm = confusion_matrix(Y_test, Y_pred)
-        accuracy_score(Y_test, Y_pred)
-        precision_score(Y_test, Y_pred) # tp / (tp + fp)
-        recall_score(Y_test, Y_pred) # tp / (tp + fn)
-        f1_score(Y_test, Y_pred)
-        df_cm = pd.DataFrame(cm, index = (0, 1), columns = (0, 1))
-        plt.figure(figsize = (10,7))
-        sn.set(font_scale=1.4)
-        sn.heatmap(df_cm, annot=True, fmt='g')
-        print("Test Data Accuracy: %0.4f" % accuracy_score(Y_test, Y_pred))
 
     
 #Autoencoder
@@ -730,3 +719,31 @@ class FullyConnectionLayer(object):
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
         plt.show()
+        
+        
+    def confusionMatrix(self, X_test, Y_test):
+        #prepara i dati
+        Y_pred = self.model.predict(X_test)
+        Y_pred = np.argmax(Y_pred, axis=1)
+        Y_test = np.argmax(Y_test, axis=1)
+        
+        #calcola gli score
+        accuracy_score_val = accuracy_score(Y_test, Y_pred)
+        precision_score_val = precision_score(Y_test, Y_pred, average='weighted') # tp / (tp + fp)
+        recall_score_val = recall_score(Y_test, Y_pred, average='weighted') # tp / (tp + fn)
+        f1_score_val = f1_score(Y_test, Y_pred, average='weighted')
+
+        #stampa gli score
+        print("accuracy_score: %0.4f" % accuracy_score_val)
+        print("precision_score: %0.4f" % precision_score_val)
+        print("recall_score: %0.4f" % recall_score_val)
+        print("f1_score: %0.4f" % f1_score_val)
+        
+        #ottiene e stampa la confusion matrix
+        cm = confusion_matrix(Y_test, Y_pred)
+        df_cm = pd.DataFrame(cm, 
+                             index = [i for i in range(cm.shape[0])],
+                             columns = [i for i in range(cm.shape[1])])
+        plt.figure(figsize = (10,7))
+        sn.heatmap(df_cm, annot=True, cmap='Blues', fmt='g')
+        

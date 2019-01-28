@@ -43,14 +43,16 @@ if __name__ == '__main__':
     #importData()
     getData = ann2.GetData()
     ae = ann2.Autoencoder()
-    #ae = ann2.VarationAutoencoder(10)
-    #ae = ann2.VarationAutoencoder2(10)
+    #ae = ann2.VarationAutoencoder(100)
+    #ae = ann2.VarationAutoencoder2(100)
     fc = ann2.FullyConnectionLayer()
     ae.verbose=0
     fc.verbose=0
     fc.use_dropout=False   
     #X, Y = getData.getTrainingData()
     X, Y = getData.getTrainingDataFromFile()
+    #getData.plotTrain(X,Y)
+    #getData.plotInput(X)
     scoreAE = ae.buildAndFit(X)
     X = ae.predict(X)
     scoreANN = fc.buildAndFit(X, Y)
@@ -60,5 +62,5 @@ if __name__ == '__main__':
     fc.plotTrain()
     print('ANN test score:', scoreANN[0])
     print('ANN test accuracy:', scoreANN[1])
-
+    fc.confusionMatrix(X, Y)
     
