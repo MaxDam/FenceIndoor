@@ -1,0 +1,31 @@
+> mongo
+
+> use fi
+switched to db fi
+
+> show collections
+areas
+wifiScans
+
+> db.areas.find()
+{ "_id" : ObjectId("592fe170332188067d4b78b7"), "lastScanId" : 1170, "area" : "stanza bimbi" }
+{ "_id" : ObjectId("592fe189332188067d4b7950"), "lastScanId" : 1100, "area" : "camera da letto" }
+{ "_id" : ObjectId("592fe1a1332188067d4b7a15"), "lastScanId" : 810,  "area" : "soggiorno" }
+{ "_id" : ObjectId("592fe1b6332188067d4b7a6c"), "lastScanId" : 860,  "area" : "salotto" }
+{ "_id" : ObjectId("592fe1cc332188067d4b7ad5"), "lastScanId" : 810,  "area" : "ingresso" }
+{ "_id" : ObjectId("592fe1e1332188067d4b7b28"), "lastScanId" : 810,  "area" : "cucina" }
+
+> db.wifiScans.find()
+{ "_id" : ObjectId("592fe17c332188067d4b78b8"), "wifiLevel" : 66, "area" : "stanza bimbi", "scanId" : 1, "wifiName" : "Vodafone-34191642" }
+{ "_id" : ObjectId("592fe17c332188067d4b78b9"), "wifiLevel" : 68, "area" : "stanza bimbi", "scanId" : 1, "wifiName" : "Telecom-58058879" }
+{ "_id" : ObjectId("592fe17c332188067d4b78ba"), "wifiLevel" : 26, "area" : "stanza bimbi", "scanId" : 1, "wifiName" : "FASTWEB-1-xXJK1hnsmPuq" }
+{ "_id" : ObjectId("592fe17c332188067d4b78bb"), "wifiLevel" : 24, "area" : "stanza bimbi", "scanId" : 1, "wifiName" : "FRITZ!Box 3272" }
+{ "_id" : ObjectId("592fe17c332188067d4b78bc"), "wifiLevel" : 26, "area" : "stanza bimbi", "scanId" : 1, "wifiName" : "WOW FI - FASTWEB" }
+{ "_id" : ObjectId("592fe17c332188067d4b78bd"), "wifiLevel" : 24, "area" : "stanza bimbi", "scanId" : 1, "wifiName" : "FASTWEB-1-6E90E5" }
+
+
+areas
+"_id", "lastScanId", "area"
+
+wifiScans
+"_id", "wifiLevel", "area", "scanId", "wifiName"

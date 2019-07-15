@@ -110,7 +110,7 @@ def saveWifiScansToDb(areaId, wifiList):
 def getWifiListFromDb():
     
     #ottiene tutte le aree dal database
-    cursor = db.wifiScans.aggregate([ { "$group": {"_id":"$wifiName", "count":{"$sum":1}} } ])
+    cursor = db.wifiScans.aggregate([ { "$group": {"_id":"$wifiName", "count":{"$sum":1}} }, {"$sort":{"wifiName" : 1}} ])
 	
     #scorre i dati..
     wifiList = []
