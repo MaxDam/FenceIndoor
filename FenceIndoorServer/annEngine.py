@@ -30,9 +30,6 @@ classifier = None
 #scaler
 scaler = None
 
-#normalizer
-normalizer = None
-
 #una dictionary ogni <wifiName> con un numero sequenziale rappresentante la colonna della matrice di input
 wifiMapEncode = {}
 
@@ -45,9 +42,6 @@ areaMapFile = 'tmp/areaMap.json'
 
 #file che conterranno i parametri della rete neurale
 scalerFile          = 'tmp/scaler.pkl'
-normalizerFile      = 'tmp/normalizer.pkl'
-autoencoderModelFile = 'tmp/autoencoder.json'
-autoencoderWeightFile= 'tmp/autoencoder.h5'
 classifierModelFile = 'tmp/classifier.json'
 classifierWeightFile= 'tmp/classifier.h5'
 
@@ -144,56 +138,11 @@ def makeDataFromDb():
     
     #torna le matrici di input e output
     return inputMatrix, outputMatrix
-    
-#costruisce una rete autoencoder con keras
-def buildFitAndPredictAutoencoder(inputMatrix):
-    
-    global autoencoder, encoder, decoder
-    
-    #log
-    print("ADDESTRAMENTO AUTOENCODER")
-    
-    #neuron input/output numbers x autoencoder
-    in_out_neurons_number = inputMatrix.shape[1]
-    
-    #size of our encoded representations
-    #encoding_dim = 16
-    encoding_dim = 32
-    batch_size=32
-    epochs=150
-    shuffle=False
-    validation_split=0.3
-    #dropout = 0.3
-    
-    #crea il modello autoencoder
-    inputLayer = Input(shape=(in_out_neurons_number, ))
-    encoderLayer = Dense(int(encoding_dim * 2), activation="tanh")(inputLayer)
-    encoderLayer = Dense(encoding_dim, activation="relu")(encoderLayer)
-    decoderLayer = Dense(int(encoding_dim * 2), activation='tanh')(encoderLayer)
-    decoderLayer = Dense(in_out_neurons_number, activation='relu')(decoderLayer)
-    autoencoder = Model(inputs=inputLayer, outputs=decoderLayer)
-    encoder = Model(inputLayer, encoderLayer)
-    
-    #inizializza la tensorboard per l'autoencoder (http://localhost:6006/)
-    tensorboard = TensorBoard(log_dir='./logs/autoencoder', histogram_freq=0, write_graph=True, write_images=True)
-    
-    #compila l'autoencoder
-    autoencoder.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
-    
-    #addestra l'autoencoder
-    autoencoder.fit(inputMatrix, inputMatrix, epochs=epochs, batch_size=batch_size, shuffle=shuffle, validation_split=validation_split, verbose=1, callbacks=[tensorboard])
-    
-    #log
-    print("PREDIZIONE AUTOENCODER")
-    
-    #effettua la predizione con l'encoder (ottenendo lo strato codificato)
-    return encoder.predict(inputMatrix)
-    #return autoencoder.predict(inputMatrix)
-    
+       
 #costruisce una rete neurale con keras
 def buildAndFitAnn(inputMatrix, outputMatrix):
     
-    global classifier, scaler, normalizer
+    global classifier, scaler
     
     #log
     print("INIZIO PREPARAZIONE/ADDESTRAMENTO ANN")
@@ -202,7 +151,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     numberHiddenLayers = 10
     dropout = 0.3
     batch_size=128
-    epochs = 150
+    epochs = 15
     test_size=0.33
     
     #log
@@ -215,9 +164,6 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     scaler = MinMaxScaler(feature_range=(0, 1))
     inputMatrix = scaler.fit_transform(inputMatrix)
     
-    #addestra l'autoencoder ed ottiene i dati dalla sua predizione
-    inputMatrix = buildFitAndPredictAutoencoder(inputMatrix)
-        
     #calcola: 
     #numero di neuroni di input in base al numero di colonne di inputMatrix
     #numero di neuroni di output in base al numero di colonne di outputMatrix
@@ -259,14 +205,11 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     classifier.add(BatchNormalization())
     classifier.add(Activation('softmax'))
     
-    #inizializza la tensorboard per l'ann
-    tensorboard = TensorBoard(log_dir='./logs/ann', histogram_freq=0, write_graph=True, write_images=True)
-    
     #compila la rete neurale
     classifier.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
 
     #addestra la rete neurale
-    classifier.fit(inputMatrix, outputMatrix, batch_size=batch_size, epochs=epochs, validation_data=(inputTestMatrix, outputTestMatrix), verbose=1, callbacks=[tensorboard])
+    classifier.fit(inputMatrix, outputMatrix, batch_size=batch_size, epochs=epochs, validation_data=(inputTestMatrix, outputTestMatrix), verbose=1)
 
     #stampa il risultato della valutazione del modello
     score = classifier.evaluate(inputTestMatrix, outputTestMatrix, verbose=0)
@@ -288,7 +231,7 @@ def makeInputMatrixFromScans(wifiScans):
     #print("INIZIO PREPARAZIONE DATI")
     
     #ricostruisce la rete dai files, se necessario
-    if classifier is None or autoencoder is None:
+    if classifier is None:
         loadAnnFromFiles()
     
     #inizializza a zero la matrice di ingresso 
@@ -321,7 +264,7 @@ def makeInputMatrixFromScans(wifiScans):
 #effettua una predizione
 def predictArea(inputMatrix):
     
-    global encoder, classifier, scaler, normalizer, areaMapDecode
+    global classifier, scaler, areaMapDecode
     
     #log
     #print("INIZIO PREDIZIONE ANN")
@@ -340,9 +283,7 @@ def predictArea(inputMatrix):
     #print("matrice di input normalizzata:")
     #print(inputMatrix)
     
-    #effettua la previsione (autoencoder + ANN)
-    inputMatrix = encoder.predict(inputMatrix)
-    #inputMatrix = autoencoder.predict(inputMatrix)
+    #effettua la previsione
     outputPredictMatrix = classifier.predict(inputMatrix)
     
     #log
@@ -372,7 +313,7 @@ def predictArea(inputMatrix):
 #salva la rete neurale in alcuni files
 def saveAnnToFiles():
     
-    global wifiMapEncode, areaMapDecode, classifier, encoder, scaler, normalizer
+    global wifiMapEncode, areaMapDecode, classifier, scaler
 
     #salva il file con i mapping delle reti con le colonne della matrice
     json.dump(wifiMapEncode, open(wifiMapFile,'w'))
@@ -382,15 +323,6 @@ def saveAnnToFiles():
 
     #salva lo scaler in un file pickle
     joblib.dump(scaler, scalerFile)
-    
-    #salva il normalizer in un file pickle
-    joblib.dump(normalizer, normalizerFile)
-    
-    #salva la struttura dell'autoencoder in json
-    encoder.save(autoencoderModelFile)
-    
-    #salva i pesi dell'autoencoder in un file h5
-    encoder.save_weights(autoencoderWeightFile)
     
     #salva la struttura della rete in json
     classifier.save(classifierModelFile)
@@ -402,7 +334,7 @@ def saveAnnToFiles():
 #carica la rete neurale dai files salvati
 def loadAnnFromFiles():
     
-    global wifiMapEncode, areaMapDecode, classifier, encoder, scaler, normalizer
+    global wifiMapEncode, areaMapDecode, classifier, scaler
     
     #ricostruisce wifiMap
     wifiMapEncode = json.load(open(wifiMapFile))
@@ -413,15 +345,6 @@ def loadAnnFromFiles():
     #ricostruisce lo scaler
     scaler = joblib.load(scalerFile) 
     
-    #ricostruisce il normalizer
-    normalizer = joblib.load(normalizerFile) 
-    
-    #ricostruisce la struttura del'autoencoder
-    encoder = load_model(autoencoderModelFile)
-
-    #ricostruisce i pesi dell'autoencoder
-    encoder.load_weights(autoencoderWeightFile)
-
     #ricostruisce la struttura della rete neurale
     classifier = load_model(classifierModelFile)
     

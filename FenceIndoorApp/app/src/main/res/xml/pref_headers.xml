@@ -8,8 +8,8 @@
         android:title="@string/pref_header_general" />
 
     <header
-        android:fragment="com.maxdam.fenceindoor.SettingsActivity$DataSyncPreferenceFragment"
+        android:fragment="com.maxdam.fenceindoor.SettingsActivity$WifiScanPreferenceFragment"
         android:icon="@drawable/ic_sync_black_24dp"
-        android:title="@string/pref_header_data_sync" />
+        android:title="@string/pref_header_wifi_scan" />
 
 </preference-headers>

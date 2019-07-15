@@ -31,7 +31,7 @@ public class MainActivity extends Activity {
     private SharedPreferences prefs;
     private boolean predictMode = false;
     private int predictScanCount = 1;
-    private int minScanCount = 0;
+    private int skipScanCount = 0;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +51,11 @@ public class MainActivity extends Activity {
 
         predictArea = (TextView)findViewById(R.id.predictArea);
 
-        //ottiene il min scan count
+        //ottiene il numero di scansioni da skippare
         try {
-            minScanCount = Integer.parseInt(prefs.getString("min_scan_count", "3"));
+            skipScanCount = Integer.parseInt(prefs.getString("skip_scan_count", "3"));
         } catch(Exception e) {
-            minScanCount = 3;
+            skipScanCount = 3;
         }
 
         //ottiene il predict scan count
@@ -110,7 +110,7 @@ public class MainActivity extends Activity {
                 if(predictMode) {
                     //richiama il servizio di scansione one-shot
                     Intent serviceScanWifiIntent = new Intent(MainActivity.this, ServiceScanWifi.class);
-                    serviceScanWifiIntent.putExtra("minScanCount", minScanCount);
+                    serviceScanWifiIntent.putExtra("skipScanCount", skipScanCount);
                     serviceScanWifiIntent.putExtra("maxScanCount", predictScanCount);
                     startService(serviceScanWifiIntent);
                 } else {
@@ -210,7 +210,7 @@ public class MainActivity extends Activity {
 
                 //richiama il servizio di scansione one-shot
                 Intent serviceScanWifiIntent = new Intent(MainActivity.this, ServiceScanWifi.class);
-                serviceScanWifiIntent.putExtra("minScanCount", minScanCount);
+                serviceScanWifiIntent.putExtra("skipScanCount", skipScanCount);
                 serviceScanWifiIntent.putExtra("maxScanCount", predictScanCount);
                 startService(serviceScanWifiIntent);
             } else {
@@ -286,14 +286,14 @@ public class MainActivity extends Activity {
             editor.commit();
         }
 
-        //ottiene il min scan count
+        //ottiene il numero di scansioni da skippare
         try {
-            minScanCount = Integer.parseInt(prefs.getString("min_scan_count", "3"));
+            skipScanCount = Integer.parseInt(prefs.getString("skip_scan_count", "3"));
         } catch(Exception e) {
-            minScanCount = 3;
+            skipScanCount = 3;
         }
 
-        //ottiene il predict scan count
+        //ottiene il numero di scansioni da effettuare in fase di predict
         try {
             predictScanCount = Integer.parseInt(prefs.getString("predict_scan_count", "1"));
         } catch(Exception e) {

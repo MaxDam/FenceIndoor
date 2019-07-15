@@ -74,7 +74,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
                 || GeneralPreferenceFragment.class.getName().equals(fragmentName)
-                || DataSyncPreferenceFragment.class.getName().equals(fragmentName);
+                || WifiScanPreferenceFragment.class.getName().equals(fragmentName);
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -84,6 +84,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
             setHasOptionsMenu(true);
+
+            bindPreferenceSummaryToValue(findPreference("server_path"));
         }
 
         @Override
@@ -98,19 +100,18 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class DataSyncPreferenceFragment extends PreferenceFragment {
+    public static class WifiScanPreferenceFragment extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_data_sync);
+            addPreferencesFromResource(R.xml.pref_wifi_scan);
             setHasOptionsMenu(true);
 
-
-            bindPreferenceSummaryToValue(findPreference("server_path"));
-            bindPreferenceSummaryToValue(findPreference("scan_count"));
-            bindPreferenceSummaryToValue(findPreference("predict_scan_count"));
-            bindPreferenceSummaryToValue(findPreference("min_scan_count"));
             bindPreferenceSummaryToValue(findPreference("wifi_level_scale"));
+            bindPreferenceSummaryToValue(findPreference("wifi_min_level"));
+            bindPreferenceSummaryToValue(findPreference("train_scan_count"));
+            bindPreferenceSummaryToValue(findPreference("predict_scan_count"));
+            bindPreferenceSummaryToValue(findPreference("skip_scan_count"));
             bindPreferenceSummaryToValue(findPreference("beacon_measure_type"));
         }
 

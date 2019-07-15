@@ -41,10 +41,12 @@ public class ServiceScanWifi extends IntentService {
 
     private int scanCount = 0;
 
-    private int minScanCount = 0;
+    private int skipScanCount = 0;
     private int maxScanCount = 1;
 
 	private int wifiLevelScale = 100;
+
+	private int wifiMinLevel = 0;
 
 	private List<List<WifiScan>> scans;
 
@@ -62,9 +64,9 @@ public class ServiceScanWifi extends IntentService {
         scanCount = 0;
 
 		//preleva i parametri di ingresso
-        minScanCount = intent.getExtras().getInt("minScanCount", 0);
+        skipScanCount = intent.getExtras().getInt("skipScanCount", 0);
         maxScanCount = intent.getExtras().getInt("maxScanCount", 10);
-        maxScanCount += minScanCount;
+        maxScanCount += skipScanCount;
 
         mainWifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 
@@ -80,6 +82,13 @@ public class ServiceScanWifi extends IntentService {
 			wifiLevelScale = Integer.parseInt(prefs.getString("wifi_level_scale", "100"));
 		} catch(Exception e) {
 			wifiLevelScale = 100;
+		}
+
+		//ottiene la misura minima del segnale wifi da accettare
+		try {
+			wifiMinLevel = Integer.parseInt(prefs.getString("wifi_min_level", "0"));
+		} catch(Exception e) {
+			wifiMinLevel = 0;
 		}
 
 		doInBackground();
@@ -121,11 +130,14 @@ public class ServiceScanWifi extends IntentService {
                 wifiScan.setWifiName(scanResult.SSID);
                 wifiScan.setWifiLevel(WifiManager.calculateSignalLevel(scanResult.level, wifiLevelScale));
 
-                wifiScanList.add(wifiScan);
+				//se il segnale raggiunge il livello minimo lo salviamo per essere inviato al server
+				if(wifiScan.getWifiLevel() >= wifiMinLevel) {
+					wifiScanList.add(wifiScan);
+				}
             }
 
-            //le lo scan count è maggione delle scansioni minime, salva la scansione e la invia al server
-            if(scanCount >= minScanCount) {
+            //le lo scan count è maggione delle scansioni da skippare, salva la scansione e la invia al server
+            if(scanCount >= skipScanCount) {
 
 				//salva la wifiScanList nella lista delle scansioni
 				scans.add(wifiScanList);

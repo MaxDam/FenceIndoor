@@ -1,0 +1,54 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ListPreference
+        android:defaultValue="100"
+        android:entries="@array/pref_wifi_level_scale_titles"
+        android:entryValues="@array/pref_wifi_level_scale_values"
+        android:key="wifi_level_scale"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="@string/pref_title_wifi_level_scale" />
+
+    <EditTextPreference
+        android:defaultValue="0"
+        android:inputType="number"
+        android:key="wifi_min_level"
+        android:title="@string/pref_title_wifi_min_level" />
+
+    <ListPreference
+        android:defaultValue="10"
+        android:entries="@array/pref_train_scan_count_titles"
+        android:entryValues="@array/pref_train_scan_count_values"
+        android:key="train_scan_count"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="@string/pref_title_train_scan_count" />
+
+    <ListPreference
+        android:defaultValue="1"
+        android:entries="@array/pref_predict_scan_count_titles"
+        android:entryValues="@array/pref_predict_scan_count_values"
+        android:key="predict_scan_count"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="@string/pref_title_predict_scan_count" />
+
+    <ListPreference
+        android:defaultValue="3"
+        android:entries="@array/pref_skip_scan_count_titles"
+        android:entryValues="@array/pref_skip_scan_count_values"
+        android:key="skip_scan_count"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="@string/pref_title_skip_scan_count" />
+
+    <ListPreference
+        android:defaultValue="rssi"
+        android:entries="@array/pref_beacon_measure_type_titles"
+        android:entryValues="@array/pref_beacon_measure_type_values"
+        android:key="beacon_measure_type"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="@string/pref_title_beacon_measure_type" />
+
+</PreferenceScreen>

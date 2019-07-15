@@ -46,7 +46,7 @@ public class ServiceScanIBeacon extends IntentService implements BeaconConsumer 
 
     private int scanCount = 0;
 
-    private int minScanCount = 0;
+    private int skipScanCount = 0;
     private int maxScanCount = 1;
 
 	private int wifiLevelScale = 100;
@@ -67,9 +67,9 @@ public class ServiceScanIBeacon extends IntentService implements BeaconConsumer 
         scanCount = 0;
 
         //preleva i parametri di ingresso
-        minScanCount = intent.getExtras().getInt("minScanCount", 0);
+        skipScanCount = intent.getExtras().getInt("skipScanCount", 0);
         maxScanCount = intent.getExtras().getInt("maxScanCount", 10);
-        maxScanCount += minScanCount;
+        maxScanCount += skipScanCount;
 
         //start del beacon detect
         startBeaconDetect();
@@ -137,7 +137,7 @@ public class ServiceScanIBeacon extends IntentService implements BeaconConsumer 
                     }
                 }
 
-                if(scanCount >= minScanCount) {
+                if(scanCount >= skipScanCount) {
 
                     //salva la wifiScanList nella lista delle scansioni
                     //scans.add(wifiScanList);
