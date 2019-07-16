@@ -115,6 +115,13 @@ cd FenceIndoorServer
 python main.py
 ```
 
+#### Init database
+You can go to the browser and open the url 
+```
+http://localhost:8090/init 
+```
+to reset and initialize the database (calling this command remove the datas)
+
 #### See tensorboard results
 
 run command (into the project path)
