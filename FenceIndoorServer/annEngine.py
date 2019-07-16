@@ -8,6 +8,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib 
+from sklearn.metrics import confusion_matrix, accuracy_score, f1_score, precision_score, recall_score
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
 from keras.layers import BatchNormalization
@@ -18,11 +19,6 @@ from keras.models import Model
 from keras import regularizers
 from keras.callbacks import TensorBoard
 import dbEngine as dao
-
-#autoencoder
-autoencoder = None
-encoder     = None
-decoder     = None
 
 #classificatore rete neurale artificiale
 classifier = None
@@ -145,14 +141,15 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     global classifier, scaler
     
     #log
-    print("INIZIO PREPARAZIONE/ADDESTRAMENTO ANN")
+    print("INIZIO ADDESTRAMENTO ANN")
     
     #hyperparameters
-    numberHiddenLayers = 10
-    dropout = 0.3
-    batch_size=128
-    epochs = 15
-    test_size=0.33
+    numberHiddenLayers = 3 #10
+    dropout = 0.5 #0.3
+    batch_size = 32 #128
+    epochs = 50
+    test_split = 0.33
+    validation_split = 0.33
     
     #log
     #print("matrice di input:")
@@ -173,7 +170,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     hiddenUnits = int(inputUnits * 1.5)
     
     #effettua lo split dei dati di train con quelli di test
-    inputMatrix, inputTestMatrix, outputMatrix, outputTestMatrix = train_test_split(inputMatrix, outputMatrix, test_size=test_size, random_state=42)
+    inputMatrix, inputTestMatrix, outputMatrix, outputTestMatrix = train_test_split(inputMatrix, outputMatrix, test_size=test_split, random_state=42)
     
     #log
     #print("matrice di input normalizzata:")
@@ -209,18 +206,19 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     classifier.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
 
     #addestra la rete neurale
-    classifier.fit(inputMatrix, outputMatrix, batch_size=batch_size, epochs=epochs, validation_data=(inputTestMatrix, outputTestMatrix), verbose=1)
+    classifier.fit(inputMatrix, outputMatrix, batch_size=batch_size, epochs=epochs, validation_split=validation_split, verbose=1)
 
     #stampa il risultato della valutazione del modello
     score = classifier.evaluate(inputTestMatrix, outputTestMatrix, verbose=0)
     print('Test score:', score[0])
     print('Test accuracy:', score[1])
+    confusionMatrix(inputTestMatrix, outputTestMatrix)
 
     #salva la rete neurale su files
     saveAnnToFiles()
     
     #log
-    print("FINE PREPARAZIONE/ADDESTRAMENTO ANN")
+    print("FINE ADDESTRAMENTO ANN")
         
 #crea la matrice di input in base alle scansioni passate in ingresso
 def makeInputMatrixFromScans(wifiScans):
@@ -270,8 +268,8 @@ def predictArea(inputMatrix):
     #print("INIZIO PREDIZIONE ANN")
     
     #log
-    #print("matrice di input:")
-    #print(inputMatrix)
+    print("matrice di input:")
+    print(inputMatrix)
     
     #Normalizza la matrice di ingresso
     inputMatrix = scaler.transform(inputMatrix)
@@ -299,6 +297,7 @@ def predictArea(inputMatrix):
     maxPredictionIndex = np.argmax(sumOutputPredictVector)
     print("indice della classe con la massima previsione:")
     print(maxPredictionIndex)
+    print()
 
     #ottiene l'area a massima previsione dato l'indice
     predictArea = areaMapDecode[str(maxPredictionIndex)]
@@ -351,3 +350,27 @@ def loadAnnFromFiles():
     #ricostruisce i pesi della ann
     classifier.load_weights(classifierWeightFile)
   
+
+def confusionMatrix(X_test, Y_test):
+    
+    global classifier
+
+    #prepara i dati
+    Y_pred = classifier.predict(X_test)
+    Y_pred = np.argmax(Y_pred, axis=1)
+    Y_test = np.argmax(Y_test, axis=1)
+    
+    #calcola gli score
+    accuracy_score_val = accuracy_score(Y_test, Y_pred)
+    precision_score_val = precision_score(Y_test, Y_pred, average='weighted') # tp / (tp + fp)
+    recall_score_val = recall_score(Y_test, Y_pred, average='weighted') # tp / (tp + fn)
+    f1_score_val = f1_score(Y_test, Y_pred, average='weighted')
+
+    #stampa gli score
+    print("accuracy_score: %0.4f" % accuracy_score_val)
+    print("precision_score: %0.4f" % precision_score_val)
+    print("recall_score: %0.4f" % recall_score_val)
+    print("f1_score: %0.4f" % f1_score_val)
+    print("confusion matrix:")
+    print(confusion_matrix(Y_test, Y_pred))
+    
