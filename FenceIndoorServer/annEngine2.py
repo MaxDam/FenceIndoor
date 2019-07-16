@@ -659,7 +659,7 @@ class FullyConnectionLayer(object):
 
         #aggiunge numberHiddenLayer strati nascosti
         hidden = first
-        for i in range(self.numberHiddenLayers):
+        for _ in range(self.numberHiddenLayers):
             #aggiunge lo strato nascosto
             hidden = Dense(hiddenUnits)(hidden)
             if self.use_batchnorm:

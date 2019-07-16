@@ -3,25 +3,18 @@
 
 import json
 import numpy as np
-#import petl as etl
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib 
 from sklearn.metrics import confusion_matrix, accuracy_score, f1_score, precision_score, recall_score
-from keras.models import Sequential
+from keras.models import Model, load_model
+from keras.layers import Input, BatchNormalization
 from keras.layers.core import Dense, Dropout, Activation
-from keras.layers import BatchNormalization
-from keras.models import load_model
 from keras.optimizers import Adam
-from keras.layers import Input
-from keras.models import Model
-from keras import regularizers
-from keras.callbacks import TensorBoard
 import dbEngine as dao
 
-#classificatore rete neurale artificiale
-classifier = None
+#modello rete neurale artificiale
+model = None
 
 #scaler
 scaler = None
@@ -37,9 +30,9 @@ wifiMapFile = 'tmp/wifiMap.json'
 areaMapFile = 'tmp/areaMap.json' 
 
 #file che conterranno i parametri della rete neurale
-scalerFile          = 'tmp/scaler.pkl'
-classifierModelFile = 'tmp/classifier.json'
-classifierWeightFile= 'tmp/classifier.h5'
+scalerFile      = 'tmp/scaler.pkl'
+modelFile       = 'tmp/model.json'
+modelWeightFile = 'tmp/model.h5'
 
 #set del seed per la randomizzazione
 np.random.seed(1671)
@@ -139,7 +132,7 @@ def makeDataFromDb():
 #costruisce una rete neurale con keras
 def buildAndFitAnn(inputMatrix, outputMatrix):
     
-    global classifier, scaler
+    global model, scaler
     
     #log
     print("INIZIO ADDESTRAMENTO ANN")
@@ -181,36 +174,39 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #print("matrice di output:")
     #print(outputMatrix)
     
-    #Inizializza la rete neurale
-    classifier = Sequential()
-    
     #aggiunge lo strato di input ed il primo strato nascosto + una regolarizzazione l2   
-    classifier.add(Dense(hiddenUnits, input_shape=(inputUnits,)))
-    classifier.add(BatchNormalization())
-    classifier.add(Activation('tanh'))
-    classifier.add(Dropout(dropout))
+    input = Input(shape=(inputUnits,))
+    first = Dense(hiddenUnits)(input)
+    first = BatchNormalization()(first)
+    first = Activation('tanh')(first)
+    first = Dropout(dropout)(first)
     
     #aggiunge numberHiddenLayer strati nascosti
+    hidden = first
     for _ in range(numberHiddenLayers):
         #aggiunge lo strato nascosto
-        classifier.add(Dense(hiddenUnits))
-        classifier.add(BatchNormalization())
-        classifier.add(Activation('tanh'))
-        classifier.add(Dropout(dropout))
+        hidden = Dense(hiddenUnits)(hidden)
+        hidden = BatchNormalization()(hidden)
+        hidden = Activation('tanh')(hidden)
+        hidden = Dropout(dropout)(hidden)
         
     #aggiunge lo strato di uscita
-    classifier.add(Dense(outputUnits))
-    classifier.add(BatchNormalization())
-    classifier.add(Activation('softmax'))
+    output = hidden
+    output = Dense(outputUnits)(output)
+    output = BatchNormalization()(output)
+    output = Activation('softmax')(output)
     
+    #crea il modello
+    model = Model(inputs=input, outputs=output)
+
     #compila la rete neurale
-    classifier.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
 
     #addestra la rete neurale
-    classifier.fit(inputMatrix, outputMatrix, batch_size=batch_size, epochs=epochs, validation_split=validation_split, verbose=1)
+    model.fit(inputMatrix, outputMatrix, batch_size=batch_size, epochs=epochs, validation_split=validation_split, verbose=1)
 
     #stampa il risultato della valutazione del modello
-    score = classifier.evaluate(inputTestMatrix, outputTestMatrix, verbose=0)
+    score = model.evaluate(inputTestMatrix, outputTestMatrix, verbose=0)
     print('Test score:', score[0])
     print('Test accuracy:', score[1])
     printScores(inputTestMatrix, outputTestMatrix)
@@ -230,7 +226,7 @@ def makeInputMatrixFromScans(wifiScans):
     #print("INIZIO PREPARAZIONE DATI")
     
     #ricostruisce la rete dai files, se necessario
-    if classifier is None:
+    if model is None:
         loadAnnFromFiles()
     
     #inizializza a zero la matrice di ingresso 
@@ -263,7 +259,7 @@ def makeInputMatrixFromScans(wifiScans):
 #effettua una predizione
 def predictArea(inputMatrix):
     
-    global classifier, scaler, areaMapDecode
+    global model, scaler, areaMapDecode
     
     #log
     #print("INIZIO PREDIZIONE ANN")
@@ -283,7 +279,7 @@ def predictArea(inputMatrix):
     #print(inputMatrix)
     
     #effettua la previsione
-    outputPredictMatrix = classifier.predict(inputMatrix)
+    outputPredictMatrix = model.predict(inputMatrix)
     
     #log
     print("matrice di previsione:")
@@ -313,7 +309,7 @@ def predictArea(inputMatrix):
 #salva la rete neurale in alcuni files
 def saveAnnToFiles():
     
-    global wifiMapEncode, areaMapDecode, classifier, scaler
+    global wifiMapEncode, areaMapDecode, model, scaler
 
     #salva il file con i mapping delle reti con le colonne della matrice
     json.dump(wifiMapEncode, open(wifiMapFile,'w'))
@@ -325,16 +321,16 @@ def saveAnnToFiles():
     joblib.dump(scaler, scalerFile)
     
     #salva la struttura della rete in json
-    classifier.save(classifierModelFile)
+    model.save(modelFile)
     
     #salva i pesi della rete in un file h5
-    classifier.save_weights(classifierWeightFile)
+    model.save_weights(modelWeightFile)
 
 
 #carica la rete neurale dai files salvati
 def loadAnnFromFiles():
     
-    global wifiMapEncode, areaMapDecode, classifier, scaler
+    global wifiMapEncode, areaMapDecode, model, scaler
     
     #ricostruisce wifiMap
     wifiMapEncode = json.load(open(wifiMapFile))
@@ -346,18 +342,18 @@ def loadAnnFromFiles():
     scaler = joblib.load(scalerFile) 
     
     #ricostruisce la struttura della rete neurale
-    classifier = load_model(classifierModelFile)
+    model = load_model(modelFile)
     
     #ricostruisce i pesi della ann
-    classifier.load_weights(classifierWeightFile)
+    model.load_weights(modelWeightFile)
   
 
 def printScores(X_test, Y_test):
     
-    global classifier
+    global model
 
     #prepara i dati
-    Y_pred = classifier.predict(X_test)
+    Y_pred = model.predict(X_test)
     Y_pred = np.argmax(Y_pred, axis=1)
     Y_test = np.argmax(Y_test, axis=1)
     
