@@ -110,8 +110,7 @@ def makeDataFromDb():
     for areaScan in areaScanList:
         areaName = areaScan["area"]
         columnIndex = areaMapEncode[areaName]
-        outputMatrix[rowIndex, columnIndex] = 1.0
-        #outputMatrix[rowIndex, columnIndex] = 1
+        outputMatrix[rowIndex, columnIndex] = 1
         
         #step 5
         #ottiene le scansioni per l'area e lo scanId correnti, e le itera;
@@ -214,7 +213,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     score = classifier.evaluate(inputTestMatrix, outputTestMatrix, verbose=0)
     print('Test score:', score[0])
     print('Test accuracy:', score[1])
-    confusionMatrix(inputTestMatrix, outputTestMatrix)
+    printScores(inputTestMatrix, outputTestMatrix)
 
     #salva la rete neurale su files
     saveAnnToFiles()
@@ -353,7 +352,7 @@ def loadAnnFromFiles():
     classifier.load_weights(classifierWeightFile)
   
 
-def confusionMatrix(X_test, Y_test):
+def printScores(X_test, Y_test):
     
     global classifier
 
