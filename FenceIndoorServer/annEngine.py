@@ -111,6 +111,7 @@ def makeDataFromDb():
         areaName = areaScan["area"]
         columnIndex = areaMapEncode[areaName]
         outputMatrix[rowIndex, columnIndex] = 1.0
+        #outputMatrix[rowIndex, columnIndex] = 1
         
         #step 5
         #ottiene le scansioni per l'area e lo scanId correnti, e le itera;
@@ -126,6 +127,7 @@ def makeDataFromDb():
             wifiLevel = scan["wifiLevel"] 
             inputMatrix[rowIndex, columnIndex] = wifiLevel
 
+        #incrementa il numero di riga
         rowIndex = rowIndex + 1
     print("preparate le matrici con ", len(areaScanList), " scansioni")
     
