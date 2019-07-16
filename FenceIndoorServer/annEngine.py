@@ -191,7 +191,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     classifier.add(Dropout(dropout))
     
     #aggiunge numberHiddenLayer strati nascosti
-    for i in range(numberHiddenLayers):
+    for _ in range(numberHiddenLayers):
         #aggiunge lo strato nascosto
         classifier.add(Dense(hiddenUnits))
         classifier.add(BatchNormalization())

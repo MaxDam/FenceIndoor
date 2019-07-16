@@ -37,7 +37,7 @@ def init():
 @app.route("/getAreaList", methods=['GET'])
 def getAreaList():
 
-    print("invocato metodo getAreaList");
+    print("invocato metodo getAreaList")
     
     try:
         #ottiene la lista delle aree dal database
@@ -56,7 +56,7 @@ def getAreaList():
 @app.route("/addArea", methods=['POST'])
 def addArea():
 
-    print("invocato metodo addArea");
+    print("invocato metodo addArea")
     
     try:
         #trasforma il bodyrequest in json
@@ -78,7 +78,7 @@ def addArea():
 @app.route("/deleteArea", methods=['POST'])
 def deleteArea():
 
-    print("invocato metodo deleteArea");
+    print("invocato metodo deleteArea")
     
     try:
         #trasforma il bodyrequest in json
@@ -100,7 +100,7 @@ def deleteArea():
 @app.route('/sendData/<areaId>', methods=['POST'])
 def sendData(areaId):
     
-    print("invocato metodo sendData con areaId: ", areaId);
+    print("invocato metodo sendData con areaId: ", areaId)
     
     try:
         #trasforma il bodyrequest in json
@@ -126,7 +126,7 @@ def sendData(areaId):
 @app.route('/training', methods=['GET'])
 def training():
     
-    print("invocato metodo training");
+    print("invocato metodo training")
 	
     try:
         #costruisce i dati
@@ -148,7 +148,7 @@ def training():
 @app.route('/predict', methods=['POST'])
 def predict():
     
-    print("invocato metodo predict");
+    print("invocato metodo predict")
 
     try:
         #trasforma il bodyrequest in json
