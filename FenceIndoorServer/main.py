@@ -3,9 +3,9 @@
 
 from flask import Flask, request
 import logging
-import commonEngine as com
-import dbEngine as dao
-import annEngine as ann
+import common as com
+import dataLayer as dl
+import neuralNetwork as ann
 import numpy as np
 
 #inizializza l'interfaccia rest
@@ -23,7 +23,7 @@ def ping():
 def init():
     try:
         #inizializza il db
-        dao.clearAndInitDb()
+        dl.clearAndInitDb()
         
         return "init ok", 200, {'ContentType':'text/html'} 
 	 
@@ -41,7 +41,7 @@ def getAreaList():
     
     try:
         #ottiene la lista delle aree dal database
-        areaList = dao.getAreaListFromDb()
+        areaList = dl.getAreaListFromDb()
     		
         #trasforma la lista di dictionary in stringa e torna l'output
         return com.json2Str(areaList), 200, {'ContentType':'application/json'} 
@@ -63,7 +63,7 @@ def addArea():
         area = com.bodyRequest2Json(request)
     		
         #aggiunge l'area nel db
-        dao.addAreaToDb(area)
+        dl.addAreaToDb(area)
         
         #torna la risposta
         return "", 200, {'ContentType':'application/json'} 
@@ -85,7 +85,7 @@ def deleteArea():
         area = com.bodyRequest2Json(request)
         
         #cancella l'area dal db
-        dao.deleteAreaToDb(area)
+        dl.deleteAreaToDb(area)
         
         #torna la risposta
         return "", 200, {'ContentType':'application/json'} 
@@ -110,7 +110,7 @@ def sendData(areaId):
         for wifiList in inputJson:
             
             #salva le scansioni wifi sul database
-            dao.saveWifiScansToDb(areaId, wifiList)
+            dl.saveWifiScansToDb(areaId, wifiList)
     	
         
         #torna la risposta

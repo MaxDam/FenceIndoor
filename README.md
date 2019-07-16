@@ -112,7 +112,7 @@ sudo mongod
 #### Start the server
 ```
 cd FenceIndoorServer
-python fenceIndoor.py
+python main.py
 ```
 
 #### See tensorboard results
@@ -171,7 +171,7 @@ start docker image from dockerhub image called maxdam/fenceindoor
 start docker and execute following commands:
 ```
 docker run -it -p 27017:27017 --name db -h db mongo:3.0.2  mongod
-docker run -it -p 8090:8090 --name fenceindoor -h fenceindoor --link db:db maxdam/fenceindoor python -u fenceIndoor.py
+docker run -it -p 8090:8090 --name fenceindoor -h fenceindoor --link db:db maxdam/fenceindoor python -u main.py
 ```
 
 You can go to the browser and open the url 
