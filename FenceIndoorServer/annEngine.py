@@ -287,19 +287,19 @@ def predictArea(inputMatrix):
     outputPredictMatrix = classifier.predict(inputMatrix)
     
     #log
-    #print("matrice di previsione:")
-    #print(outputPredictMatrix)
+    print("matrice di previsione:")
+    print(outputPredictMatrix)
     
-    #ottiene la matrice di previsione massima
-    maxPredictionMatrix = np.argmax(outputPredictMatrix, axis=1)
-    print("matrice indici di previsione massima:")
-    print(maxPredictionMatrix)
-    
-    #ottiene l'indice di previsione massima considerando le occorrenze trovate
-    maxPredictionIndex = np.argmax(np.bincount(maxPredictionMatrix))
-    print("indice previsione massima:")
+    #ottiene un vettore con somma di tutti gli output (axis=0)
+    sumOutputPredictVector = np.sum(outputPredictMatrix, axis=0)
+    print("vettore con somma di tutti gli output:")
+    print(sumOutputPredictVector)
+
+    #ottiene l'indice della classe con la massima previsione
+    maxPredictionIndex = np.argmax(sumOutputPredictVector)
+    print("indice della classe con la massima previsione:")
     print(maxPredictionIndex)
-    
+
     #ottiene l'area a massima previsione dato l'indice
     predictArea = areaMapDecode[str(maxPredictionIndex)]
      
