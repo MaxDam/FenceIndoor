@@ -1,5 +1,5 @@
 
-#funzioni di utilita' ANN e di preparazione dati ETL
+#rete neurale artificiale (ANN)
 
 import json
 import numpy as np
