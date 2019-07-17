@@ -1,4 +1,5 @@
 flask
+waitress
 pymongo
 sklearn
 numpy

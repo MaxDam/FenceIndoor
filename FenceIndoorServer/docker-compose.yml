@@ -1,6 +1,6 @@
 web:
   build: .
-  command: python -u fenceIndoor.py
+  command: python -u main.py
   ports:
     - "8090:8090"
   volumes:

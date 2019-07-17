@@ -2,6 +2,7 @@
 #interfacce RESTful
 
 from flask import Flask, request
+from waitress import serve
 import logging
 import common as com
 import dataLayer as dl
@@ -181,9 +182,14 @@ def predict():
 	
 #main
 if __name__ == '__main__':
-    #avvia il server in ascolto
-    app.run(
+
+    '''app.run(
         host =com.getCfg('server', 'address'), 
         port =com.getCfg('server', 'port'), 
         debug=com.getCfg('server', 'debug')
-    )
+    )'''
+    
+    #avvia il server waitress in ascolto
+    serve(app, 
+        host=com.getCfg('server', 'address'), 
+        port=com.getCfg('server', 'port'))
