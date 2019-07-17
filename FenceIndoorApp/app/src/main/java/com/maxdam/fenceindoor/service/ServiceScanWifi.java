@@ -121,6 +121,7 @@ public class ServiceScanWifi extends IntentService {
 
             //ottiene la lista delle wifi scansionate
             final List<WifiScan> wifiScanList = new ArrayList<WifiScan>();
+			//if(!mainWifi.startScan()) return; //TODO da provare
             List<ScanResult> scanResultList = mainWifi.getScanResults();
             for (int i = 0; i < scanResultList.size(); i++) {
 

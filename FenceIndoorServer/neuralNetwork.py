@@ -181,7 +181,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     batch_size = 32 #128
     epochs = 50
     test_split = 0.33
-    validation_split = 0.33
+    validation_split = 0.2
     
     #log
     #print("matrice di input:")
@@ -214,7 +214,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #aggiunge lo strato di input ed il primo strato nascosto + una regolarizzazione l2   
     input = Input(shape=(inputUnits,))
     first = Dense(hiddenUnits)(input)
-    #first = BatchNormalization()(first)
+    first = BatchNormalization()(first)
     first = Activation('tanh')(first)
     first = Dropout(dropout)(first)
     
@@ -223,14 +223,14 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     for _ in range(numberHiddenLayers):
         #aggiunge lo strato nascosto
         hidden = Dense(hiddenUnits)(hidden)
-        #hidden = BatchNormalization()(hidden)
+        hidden = BatchNormalization()(hidden)
         hidden = Activation('tanh')(hidden)
         hidden = Dropout(dropout)(hidden)
         
     #aggiunge lo strato di uscita
     output = hidden
     output = Dense(outputUnits)(output)
-    #output = BatchNormalization()(output)
+    output = BatchNormalization()(output)
     output = Activation('softmax')(output)
     
     #crea il modello
