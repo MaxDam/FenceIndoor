@@ -3,7 +3,7 @@
 
 import json
 import numpy as np
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib 
 from sklearn.metrics import confusion_matrix, accuracy_score, f1_score, precision_score, recall_score
@@ -50,14 +50,23 @@ def makeDataFromDb():
     #ottiene l'elenco delle wifi acquisite  nelle scansioni, e le itera per:
     # - assegnare a <wifiCount> il numero totale delle wifi acquisite
     # - associare con <wifiMap> ogni <wifiName> con un numero sequenziale rappresentante la colonna della matrice di input
+    
     print("acquisizione delle wifi scansionate..")
     wifiMapEncode = {}
     wifiCount = 0 
+
+    #ottiene dal db le wifi e le scorre..
     wifiList = dl.getWifiListFromDb()
     for wifi in wifiList:
+
+        #ottiene la wifiName, se è vuota la salta
         wifiName = wifi['wifiName']
+        if wifiName == '': continue
+
+        #incrementa il numero wifi e salva le dictionary di mapping
         wifiMapEncode[wifiName] = wifiCount
         wifiCount = wifiCount + 1
+
     print("scansionate ", wifiCount, " wifi")
         
     #step 2
@@ -66,24 +75,33 @@ def makeDataFromDb():
     # - assegnare ad <areaCount> il numero totale delle aree
     # - associare con <areaMapEncode> il nome dell'area con un numero sequenziale rappresentante la colonna della matrice di output
     # - associare con <areaMapDecode> il numero sequenziale rappresentante la colonna della matrice di output con i dettagli dell'area
+
     print("acquisizione delle aree..")
     areaMapEncode = {}
     areaMapDecode = {}
     scanCount = 0
     areaCount = 0
+
+    #ottiene dal db le aree e le scorre..
     areaList = dl.getAreaListFromDb()
     for area in areaList:
-        scanCount = scanCount + area['lastScanId']
+
+        #ottiene l'area, se è vuota la salta
         areaName = area['area']
         if areaName == '': continue
+
+        #incrementa il numero di scansioni e salva le dictionary di mapping
+        scanCount = scanCount + area['lastScanId']
         areaMapEncode[areaName] = areaCount
         areaMapDecode[str(areaCount)] = area
         areaCount = areaCount + 1
+    
     print("predisposte ", areaCount, " aree")
     
     #step 3
     # - crea una matrice <inputMatrix> fatta di <scanCount> righe e di <wifiCount> colonne, con valori tutti a zero
     # - crea una matrice <outputMatrix> fatta di <scanCount> righe e di <areaCount> colonne, con valori tutti a zero
+    
     inputMatrix = np.zeros((scanCount, wifiCount))
     outputMatrix = np.zeros((scanCount, areaCount))
     
@@ -94,14 +112,24 @@ def makeDataFromDb():
     # - ottiene la columnIndex dalla areaMap in base al nome dell'area
     # - assegna il valore areaId al vettore di uscita outputVector[rowIndex, columnIndex]
     # - esegue lo step 5
+    
+    #indicizza le scansioni
     print("indicizzazione delle scansioni..")
     dl.indexScans()
+    
     print("acquisizione delle scansioni..")
     rowIndex = 0
     columnIndex = 0
+    
+    #ottiene dal db e scorre le coppie area e scanId ..
     areaScanList = dl.getAreaAndScanIdListFromDb()
     for areaScan in areaScanList:
+        
+        #ottiene l'area, se non e' tra quelle presenti nel areaMapEncode, la salta
         areaName = areaScan["area"]
+        if areaName not in areaMapEncode: continue
+        
+        #ottiene l'indice della colonna corrispondente all'area ed imposta il singolo valore ad 1 (one hot encode)
         columnIndex = areaMapEncode[areaName]
         outputMatrix[rowIndex, columnIndex] = 1
         
@@ -110,17 +138,26 @@ def makeDataFromDb():
         #ad ogni iterazione:
         # - ottiene la columnIndex dalla wifiMap in base al wifiName
         # - assegna il valore wifiLevel alla matrice di ingresso inputMatrix[rowIndex, columnIndex] 
-        scanId   = areaScan["scanId"] 
+        
+        scanId  = areaScan["scanId"] 
+        
+        #ottiene dal db e scorre le scansioni..
         scanList = dl.getScansFromDb(areaName, scanId)
         #print("(", rowIndex, " di ",len(areaScanList),") ottenute", len(scanList), " scansioni per l'area", areaName, " con scanId", scanId)
         for scan in scanList:
+            
+            #ottiene la wifiName, se non e' tra quelle presenti nel wifiMapEncode, la salta
             wifiName = scan["wifiName"]
+            if wifiName not in wifiMapEncode: continue
+            
+            #ottiene l'indice della colonna corrispondente alla wifi ed imposta il valore di segnale
             columnIndex = wifiMapEncode[wifiName]
             wifiLevel = scan["wifiLevel"] 
             inputMatrix[rowIndex, columnIndex] = wifiLevel
 
         #incrementa il numero di riga
         rowIndex = rowIndex + 1
+
     print("preparate le matrici con ", len(areaScanList), " scansioni")
     
     #log
@@ -128,7 +165,8 @@ def makeDataFromDb():
     
     #torna le matrici di input e output
     return inputMatrix, outputMatrix
-       
+
+      
 #costruisce una rete neurale con keras
 def buildAndFitAnn(inputMatrix, outputMatrix):
     
@@ -150,10 +188,9 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #print(inputMatrix)
     
     #Normalizza la matrice di ingresso
-    inputMatrix = inputMatrix.astype('float32')
+    #inputMatrix = inputMatrix.astype('float32')
     #scaler = StandardScaler()
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    inputMatrix = scaler.fit_transform(inputMatrix)
+    #inputMatrix = scaler.fit_transform(inputMatrix)
     
     #calcola: 
     #numero di neuroni di input in base al numero di colonne di inputMatrix
@@ -173,11 +210,11 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #log
     #print("matrice di output:")
     #print(outputMatrix)
-    
+
     #aggiunge lo strato di input ed il primo strato nascosto + una regolarizzazione l2   
     input = Input(shape=(inputUnits,))
     first = Dense(hiddenUnits)(input)
-    first = BatchNormalization()(first)
+    #first = BatchNormalization()(first)
     first = Activation('tanh')(first)
     first = Dropout(dropout)(first)
     
@@ -186,14 +223,14 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     for _ in range(numberHiddenLayers):
         #aggiunge lo strato nascosto
         hidden = Dense(hiddenUnits)(hidden)
-        hidden = BatchNormalization()(hidden)
+        #hidden = BatchNormalization()(hidden)
         hidden = Activation('tanh')(hidden)
         hidden = Dropout(dropout)(hidden)
         
     #aggiunge lo strato di uscita
     output = hidden
     output = Dense(outputUnits)(output)
-    output = BatchNormalization()(output)
+    #output = BatchNormalization()(output)
     output = Activation('softmax')(output)
     
     #crea il modello
@@ -201,7 +238,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
 
     #compila la rete neurale
     model.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
-
+    
     #addestra la rete neurale
     model.fit(inputMatrix, outputMatrix, shuffle=True, batch_size=batch_size, epochs=epochs, validation_split=validation_split, verbose=1)
 
@@ -216,7 +253,8 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     
     #log
     print("FINE ADDESTRAMENTO ANN")
-        
+
+
 #crea la matrice di input in base alle scansioni passate in ingresso
 def makeInputMatrixFromScans(wifiScans):
     
@@ -226,8 +264,7 @@ def makeInputMatrixFromScans(wifiScans):
     #print("INIZIO PREPARAZIONE DATI")
     
     #ricostruisce la rete dai files, se necessario
-    if model is None:
-        loadAnnFromFiles()
+    loadAnnFromFiles()
     
     #inizializza a zero la matrice di ingresso 
     inputMatrix = np.zeros((1, len(wifiMapEncode)))    
@@ -240,14 +277,14 @@ def makeInputMatrixFromScans(wifiScans):
         wifiLevel = wifiScan["wifiLevel"]
         #print("wifi name: ", wifiName, " level: ", wifiLevel)
 
-        #se la wifiName e' tra quelle utilizzate per il training..        
-        if wifiName in wifiMapEncode:
+        #se la wifiName non e' tra quelle utilizzate per il training, la salta        
+        if wifiName not in wifiMapEncode: continue
             
-            #ottiene l'indice della matrice di input corrispondente al wifiName
-            columnIndex = wifiMapEncode[wifiName]
-        
-            #popola l'elemento columnIndex dell'inputMatrix con il valore wifiLevel
-            inputMatrix[0, columnIndex] = wifiLevel
+        #ottiene l'indice della matrice di input corrispondente al wifiName
+        columnIndex = wifiMapEncode[wifiName]
+    
+        #popola l'elemento columnIndex dell'inputMatrix con il valore wifiLevel
+        inputMatrix[0, columnIndex] = wifiLevel
     
     #log
     #print("FINE PREPARAZIONE DATI")
@@ -269,7 +306,7 @@ def predictArea(inputMatrix):
     print(inputMatrix)
     
     #Normalizza la matrice di ingresso
-    inputMatrix = scaler.transform(inputMatrix)
+    #inputMatrix = scaler.transform(inputMatrix)
     
     #predispone la matrice di uscita
     outputPredictMatrix = np.zeros((1, len(areaMapDecode)))
@@ -309,7 +346,7 @@ def predictArea(inputMatrix):
 #salva la rete neurale in alcuni files
 def saveAnnToFiles():
     
-    global wifiMapEncode, areaMapDecode, model, scaler
+    global wifiMapEncode, areaMapDecode, scaler, model
 
     #salva il file con i mapping delle reti con le colonne della matrice
     json.dump(wifiMapEncode, open(wifiMapFile,'w'))
@@ -318,20 +355,23 @@ def saveAnnToFiles():
     json.dump(areaMapDecode, open(areaMapFile,'w'))
 
     #salva lo scaler in un file pickle
-    joblib.dump(scaler, scalerFile)
-    
+    #joblib.dump(scaler, scalerFile)
+ 
     #salva la struttura della rete in json
     model.save(modelFile)
-    
+   
     #salva i pesi della rete in un file h5
     model.save_weights(modelWeightFile)
-
+    
 
 #carica la rete neurale dai files salvati
 def loadAnnFromFiles():
     
     global wifiMapEncode, areaMapDecode, model, scaler
     
+    #se il model non e' vuoto salta l'esecuzione del metodo
+    if model is not None: return
+
     #ricostruisce wifiMap
     wifiMapEncode = json.load(open(wifiMapFile))
     
@@ -339,15 +379,16 @@ def loadAnnFromFiles():
     areaMapDecode = json.load(open(areaMapFile))
 
     #ricostruisce lo scaler
-    scaler = joblib.load(scalerFile) 
+    #scaler = joblib.load(scalerFile) 
     
     #ricostruisce la struttura della rete neurale
     model = load_model(modelFile)
     
     #ricostruisce i pesi della ann
     model.load_weights(modelWeightFile)
-  
 
+
+#stampa i punteggi e la confusion matrix
 def printScores(X_test, Y_test):
     
     global model
