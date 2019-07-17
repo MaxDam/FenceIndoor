@@ -1,13 +1,12 @@
 #interfacce test
 
 import logging
-import commonEngine as com
-import dbEngine as dao
-import annEngine as ann
+import common as com
+import dataLayer as dl
 import numpy as np
 import pandas as pd
 import json
-import annEngine2 as ann2
+import neuralNetwork2 as ann2
 
 #test del training
 def testTraining():

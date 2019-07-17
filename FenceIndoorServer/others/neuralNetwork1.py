@@ -17,7 +17,7 @@ from keras.layers import Input
 from keras.models import Model
 from keras import regularizers
 from keras.callbacks import TensorBoard
-import dbEngine as dao
+import dataLayer as dl
 
 #autoencoder
 autoencoder = None
@@ -70,7 +70,7 @@ def makeDataFromDb():
     print("acquisizione delle wifi scansionate..")
     wifiMapEncode = {}
     wifiCount = 0 
-    wifiList = dao.getWifiListFromDb()
+    wifiList = dl.getWifiListFromDb()
     for wifi in wifiList:
         wifiName = wifi['wifiName']
         wifiMapEncode[wifiName] = wifiCount
@@ -88,7 +88,7 @@ def makeDataFromDb():
     areaMapDecode = {}
     scanCount = 0
     areaCount = 0
-    areaList = dao.getAreaListFromDb()
+    areaList = dl.getAreaListFromDb()
     for area in areaList:
         scanCount = scanCount + area['lastScanId']
         areaName = area['area']
@@ -112,11 +112,11 @@ def makeDataFromDb():
     # - assegna il valore areaId al vettore di uscita outputVector[rowIndex, columnIndex]
     # - esegue lo step 5
     print("indicizzazione delle scansioni..")
-    dao.indexScans()
+    dl.indexScans()
     print("acquisizione delle scansioni..")
     rowIndex = 0
     columnIndex = 0
-    areaScanList = dao.getAreaAndScanIdListFromDb()
+    areaScanList = dl.getAreaAndScanIdListFromDb()
     for areaScan in areaScanList:
         areaName = areaScan["area"]
         columnIndex = areaMapEncode[areaName]
@@ -128,7 +128,7 @@ def makeDataFromDb():
         # - ottiene la columnIndex dalla wifiMap in base al wifiName
         # - assegna il valore wifiLevel alla matrice di ingresso inputMatrix[rowIndex, columnIndex] 
         scanId   = areaScan["scanId"] 
-        scanList = dao.getScansFromDb(areaName, scanId)
+        scanList = dl.getScansFromDb(areaName, scanId)
         #print("(", rowIndex, " di ",len(areaScanList),") ottenute", len(scanList), " scansioni per l'area", areaName, " con scanId", scanId)
         for scan in scanList:
             wifiName = scan["wifiName"]

@@ -11,7 +11,7 @@ from keras.optimizers import Adam
 from keras.callbacks import TensorBoard, EarlyStopping
 from keras.losses import mse, binary_crossentropy
 from keras import backend as K
-import dbEngine as dao
+import dataLayer as dl
 import pandas as pd
 import seaborn as sn
 import matplotlib.pyplot as plt
@@ -100,7 +100,7 @@ class GetData(object):
         # - associare con <wifiMap> ogni <wifiName> con un numero sequenziale rappresentante la colonna della matrice di input
         print("acquisizione delle wifi scansionate..")
         wifiCount = 0 
-        wifiList = dao.getWifiListFromDb()
+        wifiList = dl.getWifiListFromDb()
         for wifi in wifiList:
             wifiName = wifi['wifiName']
             self.wifiMapEncode[wifiName] = wifiCount
@@ -117,7 +117,7 @@ class GetData(object):
         print("acquisizione delle aree..")
         scanCount = 0
         areaCount = 0
-        areaList = dao.getAreaListFromDb()
+        areaList = dl.getAreaListFromDb()
         for area in areaList:
             scanCount = scanCount + area['lastScanId']
             areaName = area['area']
@@ -141,11 +141,11 @@ class GetData(object):
         # - assegna il valore areaId al vettore di uscita outputVector[rowIndex, columnIndex]
         # - esegue lo step 5
         print("indicizzazione delle scansioni..")
-        dao.indexScans()
+        dl.indexScans()
         print("acquisizione delle scansioni..")
         rowIndex = 0
         columnIndex = 0
-        areaScanList = dao.getAreaAndScanIdListFromDb()
+        areaScanList = dl.getAreaAndScanIdListFromDb()
         for areaScan in areaScanList:
             areaName = areaScan["area"]
             columnIndex = self.areaMapEncode[areaName]
@@ -157,7 +157,7 @@ class GetData(object):
             # - ottiene la columnIndex dalla wifiMap in base al wifiName
             # - assegna il valore wifiLevel alla matrice di ingresso inputMatrix[rowIndex, columnIndex] 
             scanId   = areaScan["scanId"] 
-            scanList = dao.getScansFromDb(areaName, scanId)
+            scanList = dl.getScansFromDb(areaName, scanId)
             #print("(", rowIndex, " di ",len(areaScanList),") ottenute", len(scanList), " scansioni per l'area", areaName, " con scanId", scanId)
             for scan in scanList:
                 wifiName = scan["wifiName"]
