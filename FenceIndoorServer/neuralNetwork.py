@@ -203,7 +203,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     model.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
 
     #addestra la rete neurale
-    model.fit(inputMatrix, outputMatrix, batch_size=batch_size, epochs=epochs, validation_split=validation_split, verbose=1)
+    model.fit(inputMatrix, outputMatrix, shuffle=True, batch_size=batch_size, epochs=epochs, validation_split=validation_split, verbose=1)
 
     #stampa il risultato della valutazione del modello
     score = model.evaluate(inputTestMatrix, outputTestMatrix, verbose=0)
