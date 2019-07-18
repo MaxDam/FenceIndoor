@@ -3,7 +3,7 @@
 
 import json
 import numpy as np
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib 
 from sklearn.metrics import confusion_matrix, accuracy_score, f1_score, precision_score, recall_score
@@ -12,30 +12,24 @@ from keras.layers import Input, BatchNormalization
 from keras.layers.core import Dense, Dropout, Activation
 from keras.optimizers import Adam
 import dataLayer as dl
+import tensorflow as tf
 
-#modello rete neurale artificiale
+#modello rete neurale artificiale e graph di tensorflow
 model = None
+graph = None
 
 #scaler
 scaler = None
 
 #una dictionary ogni <wifiName> con un numero sequenziale rappresentante la colonna della matrice di input
-wifiMapEncode = {}
+wifiMapEncode = None
 
 #una dictionary che data la posizione dell'area ritorna i dettagli dell'area
-areaMapDecode = {}
-  
-#file che conterranno le dictionary
-wifiMapFile = 'tmp/wifiMap.json' 
-areaMapFile = 'tmp/areaMap.json' 
-
-#file che conterranno i parametri della rete neurale
-scalerFile      = 'tmp/scaler.pkl'
-modelFile       = 'tmp/model.json'
-modelWeightFile = 'tmp/model.h5'
+areaMapDecode = None
 
 #set del seed per la randomizzazione
 np.random.seed(1671)
+
 
 #costruisce la matrice di input ed il vettore di output 
 #in base ai dati presenti sul db
@@ -163,6 +157,10 @@ def makeDataFromDb():
     #log
     print("FINE PREPARAZIONE DATI")
     
+    #salva le dictionary di mapping
+    json.dump(wifiMapEncode, open('tmp/wifi_map.json','w'))
+    json.dump(areaMapDecode, open('tmp/area_map.json','w'))
+
     #torna le matrici di input e output
     return inputMatrix, outputMatrix
 
@@ -170,27 +168,23 @@ def makeDataFromDb():
 #costruisce una rete neurale con keras
 def buildAndFitAnn(inputMatrix, outputMatrix):
     
-    global model, scaler
-    
-    #log
-    print("INIZIO ADDESTRAMENTO ANN")
-    
+    global model, graph, scaler
+
+    #carica il graph di default se non c'e'
+    if graph is None: 
+        graph = tf.get_default_graph()
+
     #hyperparameters
     numberHiddenLayers = 3 #10
     dropout = 0.5 #0.3
-    batch_size = 32 #128
-    epochs = 50
+    batch_size = 16
+    epochs = 100
     test_split = 0.33
     validation_split = 0.2
     
     #log
     #print("matrice di input:")
     #print(inputMatrix)
-    
-    #Normalizza la matrice di ingresso
-    #inputMatrix = inputMatrix.astype('float32')
-    #scaler = StandardScaler()
-    #inputMatrix = scaler.fit_transform(inputMatrix)
     
     #calcola: 
     #numero di neuroni di input in base al numero di colonne di inputMatrix
@@ -203,6 +197,11 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #effettua lo split dei dati di train con quelli di test
     inputMatrix, inputTestMatrix, outputMatrix, outputTestMatrix = train_test_split(inputMatrix, outputMatrix, test_size=test_split, random_state=42)
     
+    #Normalizza le matrici di ingresso
+    scaler = MinMaxScaler()
+    inputMatrix = scaler.fit_transform(inputMatrix)
+    inputTestMatrix = scaler.transform(inputTestMatrix)
+    
     #log
     #print("matrice di input normalizzata:")
     #print(inputMatrix)
@@ -211,48 +210,55 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #print("matrice di output:")
     #print(outputMatrix)
 
-    #aggiunge lo strato di input ed il primo strato nascosto + una regolarizzazione l2   
-    input = Input(shape=(inputUnits,))
-    first = Dense(hiddenUnits)(input)
-    first = BatchNormalization()(first)
-    first = Activation('tanh')(first)
-    first = Dropout(dropout)(first)
+    #log
+    print("INIZIO CREAZIONE E ADDESTRAMENTO ANN")
     
-    #aggiunge numberHiddenLayer strati nascosti
-    hidden = first
-    for _ in range(numberHiddenLayers):
-        #aggiunge lo strato nascosto
-        hidden = Dense(hiddenUnits)(hidden)
-        hidden = BatchNormalization()(hidden)
-        hidden = Activation('tanh')(hidden)
-        hidden = Dropout(dropout)(hidden)
-        
-    #aggiunge lo strato di uscita
-    output = hidden
-    output = Dense(outputUnits)(output)
-    output = BatchNormalization()(output)
-    output = Activation('softmax')(output)
-    
-    #crea il modello
-    model = Model(inputs=input, outputs=output)
+    #sovrascrive il grafico predefinito corrente (visto che le invocazioni sono su thread separati)
+    with graph.as_default():
+   
+        #se il modello non esiste lo ricrea altrimenti lo azzera
+        #if model is None:     
+        #aggiunge lo strato di input ed il primo strato nascosto + una regolarizzazione l2   
+        input = Input(shape=(inputUnits,))
+        first = Dense(hiddenUnits)(input)
+        #first = BatchNormalization()(first)
+        first = Activation('tanh')(first)
+        first = Dropout(dropout)(first)
 
-    #compila la rete neurale
-    model.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
-    
-    #addestra la rete neurale
-    model.fit(inputMatrix, outputMatrix, shuffle=True, batch_size=batch_size, epochs=epochs, validation_split=validation_split, verbose=1)
+        #aggiunge numberHiddenLayer strati nascosti
+        hidden = first
+        for _ in range(numberHiddenLayers):
+            #aggiunge lo strato nascosto
+            hidden = Dense(hiddenUnits)(hidden)
+            #hidden = BatchNormalization()(hidden)
+            hidden = Activation('tanh')(hidden)
+            hidden = Dropout(dropout)(hidden)
+            
+        #aggiunge lo strato di uscita
+        output = hidden
+        output = Dense(outputUnits)(output)
+        #output = BatchNormalization()(output)
+        output = Activation('softmax')(output)
+         
+        #crea il modello
+        model = Model(inputs=input, outputs=output)
 
-    #stampa il risultato della valutazione del modello
-    score = model.evaluate(inputTestMatrix, outputTestMatrix, verbose=0)
-    print('Test score:', score[0])
-    print('Test accuracy:', score[1])
-    printScores(inputTestMatrix, outputTestMatrix)
+        #compila la rete neurale
+        model.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
 
-    #salva la rete neurale su files
-    saveAnnToFiles()
+        #addestra la rete neurale
+        model.fit(inputMatrix, outputMatrix, shuffle=True, batch_size=batch_size, epochs=epochs, validation_split=validation_split, verbose=1)
+
+        #stampa il risultato della valutazione del modello
+        printScores(inputTestMatrix, outputTestMatrix)
+
+        #salva lo scaler ed il modello
+        joblib.dump(scaler, 'tmp/scaler.pkl')
+        model.save('tmp/model.json')
+        model.save_weights('tmp/model_weights.h5')
     
     #log
-    print("FINE ADDESTRAMENTO ANN")
+    print("FINE CREAZIONE E ADDESTRAMENTO ANN")
 
 
 #crea la matrice di input in base alle scansioni passate in ingresso
@@ -260,11 +266,9 @@ def makeInputMatrixFromScans(wifiScans):
     
     global wifiMapEncode
     
-    #log
-    #print("INIZIO PREPARAZIONE DATI")
-    
-    #ricostruisce la rete dai files, se necessario
-    loadAnnFromFiles()
+    #ricostruisce le mappe se necessario
+    if wifiMapEncode is None: 
+        wifiMapEncode = json.load(open('tmp/wifi_map.json'))
     
     #inizializza a zero la matrice di ingresso 
     inputMatrix = np.zeros((1, len(wifiMapEncode)))    
@@ -286,9 +290,6 @@ def makeInputMatrixFromScans(wifiScans):
         #popola l'elemento columnIndex dell'inputMatrix con il valore wifiLevel
         inputMatrix[0, columnIndex] = wifiLevel
     
-    #log
-    #print("FINE PREPARAZIONE DATI")
-    
     #torna la matrice di input
     return inputMatrix
     
@@ -296,27 +297,37 @@ def makeInputMatrixFromScans(wifiScans):
 #effettua una predizione
 def predictArea(inputMatrix):
     
-    global model, scaler, areaMapDecode
+    global model, graph, scaler, areaMapDecode
+    
+    #carica il graph di default
+    if graph is None:
+        graph = tf.get_default_graph()
+
+    #ricostruisce la rete dai files, se necessario
+    if (scaler is None) or (model is None) or (areaMapDecode is None): 
+        scaler = joblib.load('tmp/scaler.pkl') 
+        model = load_model('tmp/model.json')
+        model.load_weights('tmp/model_weights.h5')
+        areaMapDecode = json.load(open('tmp/area_map.json'))
     
     #log
-    #print("INIZIO PREDIZIONE ANN")
-    
-    #log
-    print("matrice di input:")
-    print(inputMatrix)
+    #print("matrice di input:")
+    #print(inputMatrix)
     
     #Normalizza la matrice di ingresso
-    #inputMatrix = scaler.transform(inputMatrix)
+    inputMatrix = scaler.transform(inputMatrix)
     
     #predispone la matrice di uscita
     outputPredictMatrix = np.zeros((1, len(areaMapDecode)))
     
     #log
-    #print("matrice di input normalizzata:")
-    #print(inputMatrix)
+    print("matrice di input normalizzata:")
+    print(inputMatrix)
     
-    #effettua la previsione
-    outputPredictMatrix = model.predict(inputMatrix)
+    #sovrascrive il grafico predefinito corrente (visto che le invocazioni sono su thread separati)
+    with graph.as_default():
+        #effettua la previsione
+        outputPredictMatrix = model.predict(inputMatrix)
     
     #log
     print("matrice di previsione:")
@@ -335,57 +346,9 @@ def predictArea(inputMatrix):
 
     #ottiene l'area a massima previsione dato l'indice
     predictArea = areaMapDecode[str(maxPredictionIndex)]
-     
-    #log
-    #print("FINE PREDIZIONE ANN")
     
     #torna l'area con maggiore probabilita'
     return predictArea
-
-
-#salva la rete neurale in alcuni files
-def saveAnnToFiles():
-    
-    global wifiMapEncode, areaMapDecode, scaler, model
-
-    #salva il file con i mapping delle reti con le colonne della matrice
-    json.dump(wifiMapEncode, open(wifiMapFile,'w'))
-    
-    #salva il file con i mapping che data la colonna della matrice ritorna l'area
-    json.dump(areaMapDecode, open(areaMapFile,'w'))
-
-    #salva lo scaler in un file pickle
-    #joblib.dump(scaler, scalerFile)
- 
-    #salva la struttura della rete in json
-    model.save(modelFile)
-   
-    #salva i pesi della rete in un file h5
-    model.save_weights(modelWeightFile)
-    
-
-#carica la rete neurale dai files salvati
-def loadAnnFromFiles():
-    
-    global wifiMapEncode, areaMapDecode, model, scaler
-    
-    #se il model non e' vuoto salta l'esecuzione del metodo
-    if model is not None: return
-
-    #ricostruisce wifiMap
-    wifiMapEncode = json.load(open(wifiMapFile))
-    
-    #ricostruisce areaMap
-    areaMapDecode = json.load(open(areaMapFile))
-
-    #ricostruisce lo scaler
-    #scaler = joblib.load(scalerFile) 
-    
-    #ricostruisce la struttura della rete neurale
-    model = load_model(modelFile)
-    
-    #ricostruisce i pesi della ann
-    model.load_weights(modelWeightFile)
 
 
 #stampa i punteggi e la confusion matrix
@@ -393,22 +356,30 @@ def printScores(X_test, Y_test):
     
     global model
 
-    #prepara i dati
+    #valuta il modello e stampa lo score
+    score = model.evaluate(X_test, Y_test, verbose=0)
+    print('Test score:', score[0])
+    print('Test accuracy:', score[1])
+    
+    #prepara i dati per gli altri scores
     Y_pred = model.predict(X_test)
     Y_pred = np.argmax(Y_pred, axis=1)
     Y_test = np.argmax(Y_test, axis=1)
     
-    #calcola gli score
+    #calcola gli altri scores
     accuracy_score_val = accuracy_score(Y_test, Y_pred)
     precision_score_val = precision_score(Y_test, Y_pred, average='weighted') # tp / (tp + fp)
     recall_score_val = recall_score(Y_test, Y_pred, average='weighted') # tp / (tp + fn)
     f1_score_val = f1_score(Y_test, Y_pred, average='weighted')
 
-    #stampa gli score
+    #stampa gli scores
     print("accuracy_score: %0.4f" % accuracy_score_val)
     print("precision_score: %0.4f" % precision_score_val)
     print("recall_score: %0.4f" % recall_score_val)
     print("f1_score: %0.4f" % f1_score_val)
+    
+    #calcola e stampa la confusion matrix
+    cm = confusion_matrix(Y_test, Y_pred)
     print("confusion matrix:")
-    print(confusion_matrix(Y_test, Y_pred))
+    print(cm)
     
