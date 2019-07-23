@@ -175,8 +175,8 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
         graph = tf.get_default_graph()
 
     #hyperparameters
-    numberHiddenLayers = 3 #10
-    dropout = 0.5 #0.3
+    numberHiddenLayers = 3
+    dropout = 0.5
     batch_size = 16
     epochs = 100
     test_split = 0.33
@@ -216,12 +216,9 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     #sovrascrive il grafico predefinito corrente (visto che le invocazioni sono su thread separati)
     with graph.as_default():
    
-        #se il modello non esiste lo ricrea altrimenti lo azzera
-        #if model is None:     
         #aggiunge lo strato di input ed il primo strato nascosto + una regolarizzazione l2   
         input = Input(shape=(inputUnits,))
         first = Dense(hiddenUnits)(input)
-        #first = BatchNormalization()(first)
         first = Activation('tanh')(first)
         first = Dropout(dropout)(first)
 
@@ -230,14 +227,12 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
         for _ in range(numberHiddenLayers):
             #aggiunge lo strato nascosto
             hidden = Dense(hiddenUnits)(hidden)
-            #hidden = BatchNormalization()(hidden)
             hidden = Activation('tanh')(hidden)
             hidden = Dropout(dropout)(hidden)
             
         #aggiunge lo strato di uscita
         output = hidden
         output = Dense(outputUnits)(output)
-        #output = BatchNormalization()(output)
         output = Activation('softmax')(output)
          
         #crea il modello
