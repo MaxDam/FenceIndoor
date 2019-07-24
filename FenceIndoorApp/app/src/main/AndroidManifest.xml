@@ -45,9 +45,10 @@
 
         <activity
             android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
             android:configChanges="orientation"
             android:screenOrientation="portrait"
-            android:label="@string/title_activity_settings">
+            android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
         <service android:name=".service.ServiceAree" />
