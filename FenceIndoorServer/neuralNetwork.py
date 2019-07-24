@@ -178,7 +178,7 @@ def buildAndFitAnn(inputMatrix, outputMatrix):
     numberHiddenLayers = 3
     dropout = 0.5
     batch_size = 16
-    epochs = 100
+    epochs = 50
     test_split = 0.33
     validation_split = 0.2
     
