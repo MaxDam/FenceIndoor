@@ -91,17 +91,19 @@ public class ServiceScanWifi extends IntentService {
 			wifiMinLevel = 0;
 		}
 
+		//effettua la scansione in background
 		doInBackground();
-	}
+    }
 
+    //effettua la scansione
 	public void doInBackground()
-	{
+    {
 		handler.postDelayed(new Runnable() {
 
 			@Override
 			public void run()
 			{
-				mainWifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+				mainWifi = (WifiManager)getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
 				receiverWifi = new WifiReceiver();
 				registerReceiver(new WifiReceiver(), new IntentFilter(
@@ -109,8 +111,8 @@ public class ServiceScanWifi extends IntentService {
 				mainWifi.startScan();
 			}
 		}, 1000);
-
 	}
+
 
 	//receiver della scansione wifi
 	class WifiReceiver extends BroadcastReceiver {
@@ -121,7 +123,6 @@ public class ServiceScanWifi extends IntentService {
 
             //ottiene la lista delle wifi scansionate
             final List<WifiScan> wifiScanList = new ArrayList<WifiScan>();
-			//if(!mainWifi.startScan()) return; //TODO da provare
             List<ScanResult> scanResultList = mainWifi.getScanResults();
             for (int i = 0; i < scanResultList.size(); i++) {
 
@@ -143,17 +144,9 @@ public class ServiceScanWifi extends IntentService {
 				//salva la wifiScanList nella lista delle scansioni
 				scans.add(wifiScanList);
 
-				//invia il broadcast per notificare l'aggiornamento della lista wifi
-                Intent broadcastIntentUpdate = new Intent();
-                broadcastIntentUpdate.setAction(WIFISCAN_UPDATE);
-                Gson gson = new GsonBuilder().excludeFieldsWithModifiers(Modifier.TRANSIENT).create();
-				Type listType = new TypeToken<List<WifiScan>>(){}.getType();
-                broadcastIntentUpdate.putExtra("wifiScanList", gson.toJson(wifiScanList, listType));
-                sendBroadcast(broadcastIntentUpdate);
+                //invia il broadcast per notificare la singola scansione wifi
+                sendBroadcastWifiScanUpdate(wifiScanList);
             }
-
-            //si autorichiama ricorsivamente
-			doInBackground();
 
             //incrementa le scansioni effettuate
             scanCount++;
@@ -162,17 +155,36 @@ public class ServiceScanWifi extends IntentService {
 			if(scanCount >= maxScanCount) {
 
                 //invia il broadcast per notificare la fine del ciclo di scansione
-                Intent broadcastIntentEnd = new Intent();
-                broadcastIntentEnd.setAction(WIFISCAN_END);
-				Type listType = new TypeToken<List<List<WifiScan>>>(){}.getType();
-				Gson gson = new GsonBuilder().excludeFieldsWithModifiers(Modifier.TRANSIENT).create();
-				broadcastIntentEnd.putExtra("scans", gson.toJson(scans, listType));
-                sendBroadcast(broadcastIntentEnd);
+                sendBroadcastWifiScanEnd();
 
                 //stop della scansione ed azzeramento del count
                 activeScan.set(false);
                 scanCount = 0;
             }
+			else {
+                //oppure richiama la prossima scansione
+                doInBackground();
+            }
 		}
 	}
+
+    //invia il broadcast per notificare la singola scansione wifi
+    private void sendBroadcastWifiScanUpdate(List<WifiScan> wifiScanList) {
+        Intent broadcastIntentUpdate = new Intent();
+        broadcastIntentUpdate.setAction(WIFISCAN_UPDATE);
+        Gson gson = new GsonBuilder().excludeFieldsWithModifiers(Modifier.TRANSIENT).create();
+        Type listType = new TypeToken<List<WifiScan>>(){}.getType();
+        broadcastIntentUpdate.putExtra("wifiScanList", gson.toJson(wifiScanList, listType));
+        sendBroadcast(broadcastIntentUpdate);
+    }
+
+    //invia il broadcast per notificare la fine del ciclo di scansione
+    private void sendBroadcastWifiScanEnd() {
+        Intent broadcastIntentEnd = new Intent();
+        broadcastIntentEnd.setAction(WIFISCAN_END);
+        Type listType = new TypeToken<List<List<WifiScan>>>(){}.getType();
+        Gson gson = new GsonBuilder().excludeFieldsWithModifiers(Modifier.TRANSIENT).create();
+        broadcastIntentEnd.putExtra("scans", gson.toJson(scans, listType));
+        sendBroadcast(broadcastIntentEnd);
+    }
 }
