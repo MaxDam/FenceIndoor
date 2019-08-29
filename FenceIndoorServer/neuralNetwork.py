@@ -312,8 +312,8 @@ def predictArea(inputMatrix):
     #Normalizza la matrice di ingresso
     inputMatrix = scaler.transform(inputMatrix)
     
-    #predispone la matrice di uscita
-    outputPredictMatrix = np.zeros((1, len(areaMapDecode)))
+    #predispone la matrice di uscita (numero di righe = al numero di righe in input, numero di colonne = numero di aree)
+    outputPredictMatrix = np.zeros((inputMatrix.shape[0], len(areaMapDecode)))
     
     #log
     print("matrice di input normalizzata:")
