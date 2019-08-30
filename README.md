@@ -46,10 +46,8 @@ depending on the wifi signals caught around the device
 
 # Course:
 
-## To have more explanations about the code follow the project course "Practical deep learning: Geolocalizzazione Indoor":
-```
-https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor
-```
+### To have more explanations about the code follow the project course
+[Practical deep learning: Geolocalizzazione Indoor](https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor)
 
 
 # Installation:
