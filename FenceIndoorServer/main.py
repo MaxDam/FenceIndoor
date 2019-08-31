@@ -106,6 +106,7 @@ def sendData(areaId):
     try:
         #trasforma il bodyrequest in json
         inputJson = com.bodyRequest2Json(request)
+        #print(inputJson)
         
         #itera l'array di scansioni, ogni scansione contiene una wifiList da inserire nel db
         for wifiList in inputJson:
@@ -154,7 +155,8 @@ def predict():
     try:
         #trasforma il bodyrequest in json
         inputJson = com.bodyRequest2Json(request)
-        
+        #print(inputJson)
+
         #inizializza la matrice di input
         X = []
         
