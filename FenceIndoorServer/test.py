@@ -112,15 +112,16 @@ outputPredictMatrix = np.array([
 print(outputPredictMatrix)
 
 
-
+'''
 print()
 print("vettore con somma di tutti gli output:")
 sumOutputPredictVector = np.sum(outputPredictMatrix, axis=0)
 print(sumOutputPredictVector)
+'''
 
-
-
+'''
 print()
 print("indice della classe con la massima previsione:")
 maxPredictionIndex = np.argmax(sumOutputPredictVector)
 print(maxPredictionIndex)
+'''
