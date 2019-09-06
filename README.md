@@ -46,7 +46,7 @@ depending on the wifi signals caught around the device
 
 ## Course:
 
-<!--table border="0" width="100%">
+<table border="0" width="100%">
 <tr><td>
 To have more explanations about the code follow the project udemy course:
 </td></tr>
@@ -56,9 +56,9 @@ To have more explanations about the code follow the project udemy course:
 <tr><td>
 <a href="https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor/?couponCode=CODE500019091">https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor</a>
 </td></tr>
-</table-->
+</table>
 
-<table border="0" width="100%">
+<!--table border="0" width="100%">
 <tr><td>
 To have more explanations about the code follow the project udemy course:
 </td></tr>
@@ -68,7 +68,7 @@ To have more explanations about the code follow the project udemy course:
 <tr><td>
 <a href="https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor/?couponCode=CODE100019091">https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor</a>
 </td></tr>
-</table>
+</table-->
 
 # Installation:
 
