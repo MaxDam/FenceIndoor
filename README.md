@@ -63,7 +63,7 @@ To have more explanations about the code follow the project udemy course:
 To have more explanations about the code follow the project udemy course:
 </td></tr>
 <tr><td>
-<a href="https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor/?couponCode=CODE100019091"><img src="Screenshots/logo_corso.png" width=500></a>
+<a href="https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor/?couponCode=CODE100019091"><img src="Screenshots/logo_corso_offerta.png" width=500></a>
 </td></tr>
 <tr><td>
 <a href="https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor/?couponCode=CODE100019091">https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor</a>
