@@ -107,6 +107,24 @@ rename it and transfer it into your mobile device
 ..if you want, you can download the apk directly [here](./Screenshots/FenceIndoor.apk)
 
 
+grant permissions on android:
+
+<br>
+<table border="0" width="100%">
+<tr>
+	<td>Android 7</td>
+	<td>Android 8</td>
+	<td>Android 8.1</td>
+</tr>
+<tr>
+	<td><a href="Screenshots/Android7.jpg"><img src="Screenshots/Android7.jpg" width=100></a></td>
+	<td><a href="Screenshots/Android8.jpg"><img src="Screenshots/Android8.jpg" width=100></a></td>
+	<td><a href="Screenshots/Android8.1.jpg"><img src="Screenshots/Android8.1.jpg" width=100></a></td>
+</tr>
+</table>
+<br>
+
+
 ## Start server in the local machine:
 
 #### prerequisites:
