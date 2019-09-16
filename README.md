@@ -107,10 +107,10 @@ rename it and transfer it into your mobile device
 ..if you want, you can download the apk directly [here](./Screenshots/FenceIndoor.apk)
 
 
-grant permissions on android:
-
-<br>
 <table border="0" width="100%">
+<tr>
+	<td colspan=3>grant permissions on android:</td>
+</tr>
 <tr>
 	<td>Android 7</td>
 	<td>Android 8</td>
