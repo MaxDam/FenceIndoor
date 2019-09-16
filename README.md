@@ -109,7 +109,7 @@ rename it and transfer it into your mobile device
 
 <table border="0" width="100%">
 <tr>
-	<td colspan=3>grant permissions on android:</td>
+	<td colspan=3>grant wifi scans permissions on android:</td>
 </tr>
 <tr>
 	<td>Android 7</td>
