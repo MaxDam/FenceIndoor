@@ -46,27 +46,15 @@ depending on the wifi signals caught around the device
 
 ## Course:
 
-<!--table border="0" width="100%">
-<tr><td>
-To have more explanations about the code follow the project udemy course:
-</td></tr>
-<tr><td>
-<a href="https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor/?couponCode=CODE500019091"><img src="Screenshots/logo_corso.png" width=500></a>
-</td></tr>
-<tr><td>
-<a href="https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor/?couponCode=CODE500019091">https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor</a>
-</td></tr>
-</table-->
-
 <table border="0" width="100%">
 <tr><td>
 To have more explanations about the code follow the project udemy course:
 </td></tr>
 <tr><td>
-<a href="https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor/?couponCode=CODE100019091"><img src="Screenshots/logo_corso_offerta.png" width=500></a>
+<a href="https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor"><img src="Screenshots/logo_corso.png" width=500></a>
 </td></tr>
 <tr><td>
-<a href="https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor/?couponCode=CODE100019091">https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor</a>
+<a href="https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor">https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor</a>
 </td></tr>
 </table>
 
