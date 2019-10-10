@@ -51,10 +51,10 @@ depending on the wifi signals caught around the device
 To have more explanations about the code follow the project udemy course:
 </td></tr>
 <tr><td>
-<a href="https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor"><img src="Screenshots/logo_corso.png" width=500></a>
+<a href="https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor/?referralCode=5C6E709BE21F8F431E86"><img src="Screenshots/logo_corso.png" width=500></a>
 </td></tr>
 <tr><td>
-<a href="https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor">https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor</a>
+<a href="https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor/?referralCode=5C6E709BE21F8F431E86">https://www.udemy.com/course/practical-deep-learning-geolocalizzazione-indoor</a>
 </td></tr>
 </table>
 
